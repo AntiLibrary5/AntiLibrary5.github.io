@@ -23,9 +23,13 @@ h1 {
     font-size: 2em;
     font-family:Helvetica;
 }
+h1 {
+    font-size: 1.6em;
+    font-family:Helvetica;
+}
 p {
     font-family:Tahoma;
-    font-size: 1em;
+    font-size: 0.95em;
     line-height: 1.2em;
     color: #333;
 }
@@ -36,7 +40,7 @@ footer {
 
 ul.posts { 
     margin: 20px auto 40px; 
-    font-size: 1em;
+    font-size: 0.95em;
     line-height: 1.2em;
 }
 
