@@ -21,11 +21,11 @@ a:hover {
 }
 h1 {
     font-size: 2em;
-    font-family:Tahoma;
+    font-family:Helvetica;
 }
 p {
     font-family:Tahoma;
-    font-size: 1em;
+    font-size: 0.9em;
     line-height: 1.05em;
     color: #333;
 }
@@ -36,7 +36,7 @@ footer {
 
 ul.posts { 
     margin: 20px auto 40px; 
-    font-size: 1.1em;
+    font-size: 0.9em;
 }
 
 ul.posts li {
