@@ -41,7 +41,7 @@ where \( \alpha \in \mathbb{R} \) is a scalar and the elements \( x,y \in V \) a
 </p>
 
 <p align="justify">
-Example of vectors spaces:
+Just keep the following in the back of your head: fundamental vector space operations are addition and scaling. Some examples of vectors spaces are:
 <li>\( (\mathbb{R}, +, .) \)
 <li>\( (\mathbb{R}^2, +, .) \)
 <li>\( (\mathbb{R}^3, +, .) \)
@@ -60,6 +60,100 @@ x = \begin{bmatrix} x_1 \\ x_2 \\ . \\.\\ x_n \\ \end{bmatrix}
 
 <p align="justify">
 <b>Linear combination</b>
-<br>Now that we have a vector space and can define elements of the vectors space, even better, we can linearly combine them. 
-For \( x,y \in V \), we can then have \( \alpha_1 x + \alpha_2 y \in V \) for any scalars \( \alpha_1, \alpha_2 \in \mathbb{R} \)
+<br>Now that we have a vector space and can define elements of the vectors space, even better, we can linearly combine them to from new vectors belonging to a particular vector space. 
+For \( x,y \in V \), we can have \( \alpha_1 x + \alpha_2 y \in V \) for any scalars \( \alpha_1, \alpha_2 \in \mathbb{R} \)
+</p>
+
+<p align="justify">
+<b>Span</b>
+<br> To sum up what we know so far, given a vector space (with fundamental operations of addition and scaling), we can have a number of elements in that vector space, a list of vectors i.e. a list of vectors so to speak, which we can linearly combine to form new vectors.
+<br> <br>The span of a list of vectors is the set of all vectors that can be written as a linear combination of the vectors in that list denoted as \( span(v_1, v_2,...,v_n) \).
+<br>For example,
+<br>span of \( x = \begin{bmatrix} 2 \\ 0 \end{bmatrix} \) and \( x = \begin{bmatrix} 0 \\ 1 \end{bmatrix} \) is \( \mathbb{R}^2 \)
+<br><br> span of \( x = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \) and \( x = \begin{bmatrix} 3 \\ 0 \end{bmatrix} \) is \( \mathbb{R} \)
+</p>
+
+
+<p align="justify">
+<b>Linear independence</b>
+<br>A list of vectors is linearly independent if none of the vectors is in the span of the other vectors (that is to say, none of the vectors in the list can be written as a linear combination of the other vectors in that list). For example,
+<br><br>\( x = \begin{bmatrix} 2 \\ 0 \\ 0 \end{bmatrix} \), \( y = \begin{bmatrix} 4 \\ 0 \\ 0 \end{bmatrix} \), \( z = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix} \) are not linearly independent whereas,
+<br><br>\( x = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \) and \( y = \begin{bmatrix} 0 \\ 1 \end{bmatrix} \) are linearly independent.
+
+<br><br>Proposition:
+</p>
+
+<p align="justify">
+<b>Spanning list</b>
+<br>The spanning list of a vector space \(V\) is a list of vectors such that the span is equal to \(V\). For example,
+<br><br>\( \Bigg\{ \begin{bmatrix} 2 \\ 0 \end{bmatrix} \), \( \begin{bmatrix} 0 \\ 1 \end{bmatrix} \Bigg\} \) is a spanning list of \( \mathbb{R}^2 \)
+</p>
+
+<p align="justify">
+<b>Basis</b>
+<br>A linearly independent list that spans a vector space \(V\) is called the basis of \(V\).
+</p>
+
+Any linearly independent list can be extended to form a basis, and any spanning list can be trimmed down to form a basis.
+
+<p align="justify">
+<b>Dimension</b>
+<br>Any vector space can have multiple basis and all will necessarily have equal length. That length is called the dimension of that vector space. For example,
+<br><br>consider \( x = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix} \), \( y = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix} \), \( z = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix} \)
+<br><br>then \( {x,y,z} \) is a basis of \(\mathbb{R}^3\) and its dimension, \(dim(\mathbb{R}^3) = 3\).
+</p>
+
+<p align="justify">
+<b>Linear transformation</b>
+<br>Now we start thinking about mapping from one vector space to another via linear functions as transformations. Consider the vector spaces \(V, W\). Then \( L:V \rightarrow W\) is a linear transformation if \(\forall v_1, v_2 \in V\), \( \alpha_1, \alpha_2 \in \mathbb{R} \), it respects the vector space operations:
+\[ L(\alpha_1 v_1 + \alpha_2 v_2) = \alpha_1 L(v_1) + \alpha_2 L(v_2) \] 
+For example,
+<br><br>\( 
+L = \Bigg\{ 
+\eqalign{
+\mathbb{R}^2 \rightarrow \mathbb{R}^2 \\
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \rightarrow \begin{bmatrix} x_1 \\ 3 x_2 \end{bmatrix}
+} 
+\) 
+<br>is a linear transformation whereas,
+<br><br>\( 
+L = \Bigg\{ 
+\eqalign{
+\mathbb{R}^2 \rightarrow \mathbb{R}^2 \\
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \rightarrow \begin{bmatrix} x_1 \\ 5 \end{bmatrix}
+} 
+\) 
+<br> is not a linear transformation.
+<br><br>A linear transformation is fully specified by the basis of the vector in the image.
+</p>
+
+<p align="justify">
+<b>Rank</b>
+<br>The rank of a transformation \(L\) is the dimension of its range/image i.e. the length of basis vectors in the image.
+\[ rank(L) = dim(L(V)) \]
+</p>
+
+<p align="justify">
+<b>Nullspace/Kernel</b>
+<br>The nullspace or kernel of a linear transformation is the set of vectors mapped to 0. Consider the linear transformation \( L:V \rightarrow W\) then:
+\[ ker(L) = {v \in V, L(V) = 0} \] 
+For example,
+<br><br>\( 
+L = \Bigg\{ 
+\eqalign{
+\mathbb{R}^2 \rightarrow \mathbb{R}^2 \\
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \rightarrow \begin{bmatrix} x_1 \\ 0 \end{bmatrix}
+} 
+\) 
+<br>\( ker(L) = \Bigg\{ \begin{bmatrix} 0 \\ x_2 \end{bmatrix}, x_2 \in \mathbb{R} \Bigg\} \)
+<br>
+<br>
+The nullity of a linear transformation is the dimension of the space of vectors in the domain that maps to the zero vectors.
+\[ nullity(L) = dim(ker(L)) \]
+</p>
+
+<p align="justify">
+<b>Rank-Nullity theorem</b>
+<br>The rank-nullity theorem says that the rank (range) + nullity (domain) of the transformation is equal to the dimension of its domain. Thus, for any linear transformation \( L:V \rightarrow W\):
+\[ rank(L) + nullity(L) = dim(V) \]
 </p>
