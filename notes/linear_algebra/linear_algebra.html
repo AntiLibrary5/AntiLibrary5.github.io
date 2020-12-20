@@ -3,7 +3,7 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Linear Algebra</h1>
-  
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
@@ -14,160 +14,52 @@ title: Vaibhav Arora, theboxtroll
   </script>
 </head>
 
-<p>
-  When \(a \ne 0\), there are 5 solutions to \(ax^2 + bx + c = 0\) and they are
-  \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]
+<p align="justify">
+<b>Vectors</b>
+<br>First and foremost, disregard the notions of data points, co-ordinates, arrays, direction, magnitude, etc. associated with the term vector and consider the notion of vector spaces.
+A vectors space \((V, +, .)\) is a set endowed by two operations:
+\[ 
++ \Bigg\{ 
+\eqalign{
+(V, V) \rightarrow V \\
+(x, y) \rightarrow x+y
+}  
+\]
+and
+\[ 
+. \Bigg\{ 
+\eqalign{
+(\mathbb{R}, V) \rightarrow V \\
+(\alpha, x) \rightarrow \alpha x
+}  
+\]
+where \( \alpha \in \mathbb{R} \) is a scalar and the elements \( x,y \in V \) are then called vectors. Formally a number of axioms need to hold true such that:
+<li>\( (V,+) \) is an additive group
+<li>\( \alpha(x+y) = \alpha x + \alpha y \) 
+<li>\( \alpha_1 (\alpha_2 x) = ( \alpha_1 \alpha_2 ) x \) 
+<li>\( (\alpha_1 + \alpha_2) x = \alpha_1 x + \alpha_2 x \) 
 </p>
 
-<b>Vectors</b>
 <p align="justify">
-First and foremost, disregard the notions of data points, co-ordinates, arrays, direction, magnitude, etc. associated with the term vector and consider the notion of vector spaces.
-A vectors space \((V, +, .))\ is a set endowed by two operations:
-          
-          </p>
-A vector is a column of real numbers
+Example of vectors spaces:
+<li>\( (\mathbb{R}, +, .) \)
+<li>\( (\mathbb{R}^2, +, .) \)
+<li>\( (\mathbb{R}^3, +, .) \)
+<li>\( (\mathbb{R}^n, +, .) \)
 
-The set of all vectors with n entries is called Rn
+<br>although these associations are not limited to real numbers.
+So to remember, anything where rules of vector addition and scaling holds is a vector space and its elements are called vectors. 
+</p>
 
-A vector space is a set of vectors closed by the fundamental vector space operations.
+<p align="justify">
+Concretely, \( x \in \mathbb{R}^n \) would be a vector such that
+\[
+x = \begin{bmatrix} x_1 \\ x_2 \\ . \\.\\ x_n \\ \end{bmatrix}
+\]
+</p>
 
-The fundamental vector space operations are addition and scaling.
-
-A linear combination of a list of vectors is the sum of scalar multiples of those vectors.
-
-The span of a list of vectors is the set of all vectors that can be written as a linear combination of the vectors in that list.
-
-A list of vectors is linearly independent if none of the vectors is in the span of the other vectors.
-
-A linearly independent list that spans a vector space V is called the basis of V.
-V can have multiple basis and all will necessarily have equal length.
-
-The number of vectors in the basis (the list) of V is called the dimension of V
-
-Any linearly independent list can be extended to form a basis, and any spanning list can be trimmed down to form a basis
-
-A transformation is linear, if it respects the vector space operations. T: V->W is linear if T(cV+W) = cT(V) + T(W)
-
-Linear transformation can be represented as matrices which store the coefficients for the formula for the entries of T
-
-Product of matrices and vectors is defined s.t. multiplying a vector by a matrix is same as applying a linear transformation to the vector. Equivalently, the product is equal to the column entries of the matric with the entries of the vector as weights.
-
-Product of 2 matrices is associative but not commutative.
-
-A linear transformation is fully specified by the basis of the vector in the image
-
-Dimension of a vector space V is equal to the number of vectors in the basis of V
-
-The rank of transformation/matrix is the dimension of its range/image i.e. number of basis vectors in the image
-
-The nullity of a linear transformation is the dimension of the space of vectors in the domain that maps to the zero vectors
-
-The rank-nullity theorem says that the rank (range) + nullity (domain) of the transformation is equal to the dimension of its domain.
-
-A linear system of equations can be represented as a matrix equation.
-
-Ax=b:
-* has a solution iff b is in the span of the columns of A
-* has a unique solution iff the columns of A are linearly independent
-* has no solution or infinitely many solutions if A is m x n with n>m (necessarily linearly dependent)
-
-If a square matrix is invertible as a map from Rn to Rn, then its inverse is linear
-
-Transpose of a matrix is obtained by swapping rows and columns
-
-The dot product of two vectors measures their alignment
-
-x.y = x'y
-x.x = ||x||2
-
-To find the component of a vector a in the direction of a vector u, v.u
-
-A vector list is called orthogonal if all vectors are orthogonal to each other
-
-A vector list is called orthonormal if all vectors are orthogonal to each other and of unit length
-
-A transformation  x -> Ux from Rn to Rn is distance-preserving if the norm of x is the same as the norm of Ux for all x. Using dot products, we can write the distance-preserving condition as x.x = (Ux).(Ux) => x'x = x'U'Ux => U'U = I
-
-If the transformation preserves angles as well as distances, then x.y must also be equal to (Ux).(Uy) for all x,y. Rewriting this equation using transposes, we see that x'y = (Ux)'(Uy) = x'U'Uy and this holds if U'U = I
-
-A matrix with orthonormal columns is called an orthogonal matrix and satisfies U'U = I and they preserve length
-||Ux||2 = (Ux)'(Ux) = x'U'Ux = x'Ix = x'x = ||x||2
-Note that orthogonal matrices can't have any eigenvectors
-
-For orthogonal matrices, U' = inv(U)
-
-For an mxn matrix U with orthonormal columns, we must have m>=n since the linearly independent columns in U cannot be greater than m because the range of U is a subspace of Rm.
-The rank of U is equal to the number of linearly independent columns in U, which is n in this case
-
-The action of a matrix like [3 0;0 2] is easy to understand because we can think of it as scaling along x-axis by 3 and scaling along y-axis by 2. We can think of its inverse as scaling along x-axis by 1/3 and scaling along y-axis by 1/2.We can also square such matrices easily.
-Such matrices are called diagonal matrices
-
-Those handy off-diagonal zeros arise from the fact that the matrix/transformation preserves the direction of vectors along x-axis and y-axis. Vectors with this property are called eigen-vectors, and if we can find the basis of eigenvectors (eigenbasis, i.e. our basis happens to contain all eigenvectors) of a matrix then we can reason about that matrix as effectively as we can reason about a diagonal matrix (basis just get scaled in the image).
-we can better understand a linear transformation by breaking it down into simpler linear transformations.
-That is why, often we try to decompose/diagonalize any matrix into an equivalent product of (distance and angle preserving matrices and matrices that just scale) matrices with basis of eigenvectors. (diagonalization or eigenvalue decomposition)
-
-Matrices that scale space along the axes of some orthogonal grid are called orthogonally diagonalizable
-
-Av = cv, where v is an eigenvector and c its eigenvalue
-
-Not every matrix has a basis of eigenvectors (like a rotation matrix or matrices which do not have linearly independent columns of eigenvectors)
-
-A matrix which does have a basis of eigenvectors is called Diagnolizable.
-Hence orthogonal matrices (rotational) are not diagonalizable over R but can be diagonalized over C
-
-Diagonalizing (or eigenvalue decomposition) a n x n matrix A means writing it in a form:
-A = VDV-1 <=> AV = DV, where V contains columns which are linearly independent columns of eigenvectors of A
-
-Symmetric Matrix: A = A'
-* Eigenvectors corresponding to different eigenvalues must be orthogonal. Because:
-If v is an eigenvector of A, and w an eigenvector of A', then v and w must be orthogonal since A=A'
-
-Orthogonal matrices must be symmetric. Symmetric matrices need not be orthogonal but every symmetric matrix is orthogonally diagonalizable.
-
-A positive definite matrix A is a symmetric matrix whose eigenvalues are all positive.
-
-A positive semi-definite matrix A is a symmetric matrix whose eigenvalues are all nonnegative.
-
-Equivalently, a symmetric matrix A is positive semi-definite if x'Ax >= 0 for all x .
-
-Negative definite and negative semidefinite matrices are defined analogously.
-
-The eigenspace decomposition of a diagonalizable matrix is even easier to understand if the eigenvectors happen to be orthogonal. It turns out that this happens exactly when the matrix is symmetric
-
-The Spectral theorem tells us that if a matrix A is symmetric then A is orthogonally Diagnolizable (A has pairwise orthogonal eigenvectors). Conversely, every orthogonally diagonalizable matrix is symmetric.
-And in this case, A = VDV' = VDV^-1
-
-Although it seems that the spectral theorem may be of limited use since so many matrices are not symmetric, we see that we can associate any rectangular matrix with a symmetric square matrix that we can apply the spectral theorem to and use to extract insight about the original matrix.
-
-For any non-symmetric matrix A, A'A is always symmetric.
-(A'A)' = A'(A')' = A'A
-So we can diagonalize A'A = VDV^-1 = VDV'
-
-A'A is called the Gram Matrix of A and is always positive semi-definite.
-Av => (Av)'(Av) = v'A'Av = (Av)'Av = (Av).(Av) = |Av|^2 >= 0
-
-Note that rank of A is equal to the rank of A'A:
-If Ax = 0 => A'Ax = 0 (multiplying both sides by A')
-Hence, null space of A is a subset of null space of A'A
-Conversely, A'Ax = 0 => x'A'Ax = 0 => |Ax|^2 = 0 => Ax = 0
-Since, A and A'A have same null space dimension and have same domain Rn, they also have same rank by rank nullity theorem.
-
-Define sqrt(A'A) = V.sqrt(D).V'
-Av has the same length as sqrt(A'A).v for all v
-i.e. |Av|^2 = |sqrt(A'A)v|^2 i.e a rotation for v
-and hence,
-A = R.sqrt(A'A) for some rotation matrix R
-This is called polar decomposition.
-
-The polar decomposition tells us that any square matrix is almost the same as some symmetric matrix, and the spectral theorem tells us that a symmetric matrix is almost the same as a simple scaling along the coordinate axes. (In both cases, the phrase "almost the same" disguises a composition with an orthogonal transformation.) We should be able to combine these ideas to conclude that any square matrix is basically the same as a simple scaling along the coordinate axes!
-
-A = R.sqrt(A'A) = R.V.sqrt(D).V' = (R.V).sqrt(D).V' = U.E.V'
-Hence, we do not need special matrices to map one set of orthogonal gridlines to another, every matrix does this, i.e. all matrices are orthogonally diagonalizable. This is called SVD.
-
-The diagonal entries of E, which are the square roots of the eigenvalues of A, are called the singular values of A. The columns of U are called left singular vectors, and the columns of V are called right singular vectors.
-
-Linear dependence is numerically fragile: if the columns of a matrix (with more rows than columns) are linearly dependent, then perturbing the entries slightly by adding tiny independent random numbers is almost certain to result in a matrix with linearly independent columns. However, intuition suggests that subverting the principles of linear algebra in this way is not going to solve any real-world problems that emerge from linear dependence relationships among columns of a matrix.
-
-This intuition is accurate, and it highlights the utility of having a generalization of the idea of linear independence which can quantify how close a list of vectors is to having linear dependence relationships, rather than remaining within the confines of the binary labels "linearly dependent" or "linearly independent". The singular value decomposition provides such a tool.
-
-We conjecture that  very small singular values indicates that  columns would need to be removed to obtain a matrix which does not have approximate linear dependence relationships among its columns.
+<p align="justify">
+<b>Linear combination</b>
+<br>Now that we have a vector space and can define elements of the vectors space, even better, we can linearly combine them. 
+For \( x,y \in V \), we can then have \( \alpha_1 x + \alpha_2 y \in V \) for any scalars \( \alpha_1, \alpha_2 \in \mathbb{R} \)
+</p>
