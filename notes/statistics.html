@@ -134,22 +134,22 @@ For example, let \(X\) have a range \([0,2]\) and density \(\frac{3}8 x^2 \)
 <br>Now given the outcomes (sample data), what can we say about the process that generated the data? We use the data to infer, or rather approximate the underlying distribution that generated the data via:
 <li>parameter estimation: what parameter values possibly shape the underlying distribution?
 <li>hypothesis testing: is the assumed law for the underlying distribution correct or should we change it?
-<br>The only information we have is the sample!
+<br><br>The only information we have is the sample! From the sample, statistical procedures can infer the likely properties of the population.
 </p>
 
 <p align="justify">
 <b>Parameter estimation</b>
-<br>Given an underlying unknown distribution, we want to know its nature i.e. the law and the parameters that shape the distribution assuming a particular law. To find the estimates of the parameters (since that's the best we can do!), we define estimators. 
+<br>Given an underlying unknown distribution, we want to know its nature i.e. the law and the parameters that shape the distribution assuming a particular law. To find the estimates of the parameters (since that's the best we can do!), we define estimators.
 <br>An estimator \(\widehat{\theta}\) of an underlying true parameter \(\theta\) is a function of the data. Note that \(\theta\) is a fixed quantity whereas \(\widehat{\theta}\) is a random value with the notion of an expected value and its distributionis called the sampling distribution. We can define any estimator but ofcourse, some are more useful than others. We usually care about estimator functions that map the sample of the data to parameters like mean, variance, standard deviation of the data because these are usually enough to completely define a distribution.
 <br><br>Next we want to know how to define these estimator functions \(\widehat{\theta}\) and once we have them, how can we assess their quality?
 <br><b>Q.</b>How to define an estimator function \(\widehat{\theta}\)?
 <br><b>Ans.</b>We have two methods:
 <br>1. Method of moments
-<br>2. Method of maximum likelihood  
+<br>2. Method of maximum likelihood
 <br><br><b>Q.</b>How do we assess the quality of a particular estimator function \(\widehat{\theta}\)?
 <br><b>Ans.</b>We commonly use:
 <br>1. Bias
-<br>2. Mean-squared error  
+<br>2. Mean-squared error
 </p>
 
 <p align="justify">
@@ -158,7 +158,7 @@ For example, let \(X\) have a range \([0,2]\) and density \(\frac{3}8 x^2 \)
 \[ \mu_i = \int x^i f(x) dx \]
 Note that the first theoretical moment is just the mean. In other words, the expected value has a physical interpretation as the center of mass (or the first moment in statics).
 <br>Now assume we observe an i.i.d sample \(X_1,X_2,..X_n\) from an unknown distribution \(f(x|\theta)\). Then the method of moment replaces the \(i^{th}\) theoretical moment with the \(i^{th}\) sample moment,
-\[\mu_i(\theta) = \widehat{\mu_i}\] 
+\[\mu_i(\theta) = \widehat{\mu_i}\]
 That's all there is. Again, simple to use in some cases, useless in others. Note that in d-dimensional cases, i.e. with \(d\) parameters, we would solve \(d\) such equations.
 </p>
 
@@ -170,12 +170,13 @@ values \(\widehat{\theta_1}, . . . , \widehat{\theta_n}\) that maximize the like
 <br><br>So there is an underlying true distribution  \(X_1, X_2,...,X_n \sim P(X|\theta)\). We might know or can assume the nature of the distribution of this underlying data according to some standard distributions we can deal with. We ask ourselves, given some value of \(\widehat{\theta}\), what is the probability of seen the data \(X\)? In other words, we want to maximize \(P(X|\widehat{\theta})\). The \(\widehat{\theta})\) that does that is the maximum likelihood estimation.
 \[ P(X_1|\widehat{\theta})P(X_2|\widehat{\theta})P(X_3|\widehat{\theta})...P(X_n|\widehat{\theta}) = \prod_{1}^n P(X_i|\widehat{\theta}) = L(\widehat{\theta})\]
 
-Note that the likelihood function value would be greater when the estimated value of \(\widehat{\theta}\) would be closer to the underlying true value. Hence the idea of maximizing the likelihood.
+Essentially, the likelihood function value would be high if more and more \(X_i\) are surrounding a particular value of  \(\widehat{\theta}\) considered. Naturally, the product \(\prod_{1}^n P(X_i|\widehat{\theta})\) would be highest for
+estimated value of \(\widehat{\theta}\) which would be closest to the underlying true value \(\theta\). Hence the idea of maximizing the likelihood.
 
 <br><br>Now when maximizing the likelihood function, it is often easier to maximize the log of the likelihood function. Taking the log converts the product to the sum. Since the log is a monotonic function, its maximum must occur for the same value of \(\widehat{\theta}\) as does the likelihood function.
-\[ \max_\widehat{\theta} \log(L(\widehat{\theta}))\] \[=\min_\widehat{\theta} \Bigg[-\log(L(\widehat{\theta})) \Bigg] \] 
+\[ \max_\widehat{\theta} \log(L(\widehat{\theta}))\] \[=\min_\widehat{\theta} \Bigg[-\log(L(\widehat{\theta})) \Bigg] \]
 \[=\min_\widehat{\theta} \Bigg[-\sum_{i=1}^n P(X_i|\widehat{\theta})\Bigg]\]
- 
+
 <br><br>In general, one can show that maximum likelihood estimators:
 <li>have bias that goes to zero for large sample sizes
 <li>have minimum variance for large sample sizes
@@ -186,9 +187,43 @@ Note that the likelihood function value would be greater when the estimated valu
 <b>Confidence intervals</b>
 <br>Confidence intervals provide an alternative to using an estimator \(\widehat{\theta}\) when we wish to estimate an unknown parameter \(\theta\).
 
+<br><br>What does “95% Confidence“ indicate? Imagine that we collect 100 random samples from a population. We’d end up calculating 100 different confidence intervals for the mean. If we set the confidence level at 95%, we’d expect that 95 out of 100 confidence intervals will contain the actual population parameter.
+
+<br><br>We can find an interval [A,B] that we think has high probability of containing \(\theta\). The length of such an interval gives us an idea of how closely we can estimate \(\theta\).
+
+<br><br>We can find the mathematical formula for the sampling distribution of the estimator. We can then make use of this sampling distribution to get an exact confidence interval for the parameter.
+
+<br><br>Now, a pivot is a function of the data and the parameter such that its distribution does not depend on the parameter. It is not a statistic since it contains the unknown parameter (recall that a statistic is a function of the sample data that estimates a parameter and cannot contain the unknown parameter). In constructing a CI, we want to manipulate the pivot to get an interval about the unknown parameter.
+
+<br><br>Finally, to construct an exact CI:
+<br>1. Find a pviot \(h(X_1,..,X_n,\theta)\)
+<br>2. Using the distribution of \(h(X_1,..,X_n,\theta)\), let \(a, b\) be the values of \(h\) such that the probability that \(h\) lies in between \(a, b\) is \(1-\alpha\), i.e. \( P(a \le h \le b) \) = \( 1-\alpha \). Then,
+\[ P(a \le h(X_1,..,X_n,\theta) \le b) = 1-\alpha \]
+\[ \implies P(LB(X_1,...,X_n) \le \theta \le UB(X_1,...,X_n)) = 1-\alpha \]   
+</p>
+ 
+<p align="justify">
+<b>Bootstrap</b>
+<br>For simple cases, we can obtain the sampling distribution and based on it, we can obtain the confidence intervals for the unknown parameters. In theory, only standard distributions allow us to perform these tasks by the introduced methods. However, usually, the underlying distribution model is very complicated or even unknown and this makes it impossible to obtain the sampling distribution.
+
+<br><br>We know that sampling distributions and confidence intervals are desired properties about the estimator. In these situations, we can use computer simulations to approximate the sampling distribution and the CI. This is referred to as bootstrapping.
+
+<br><br>The basic idea of bootstrap is that the sample we have is the best guess we have as to the shape of the population from which the sample was taken. Therefore, instead of assuming typical mathematical shape for the population, we instead use the shape of the sample.
+
+<br><br>From a single sample, only one statistic like mean can be obtained. In order to reason about the underlying population, we need some sense of variability of the mean that we have computed.
+
+<br><br>Using 1000s of resamples, we compute the statistic for each and get a histogram of bootstrap statistic. This provides an estimate of the shape of the distribution of the statistic/estimator from which we can answer questions about how much it varies via CI based on bootstrap!
 </p>
 
+<p align="justify">
+<b>Hypothesis testing</b>
+<br>Statistical tools we have worked towards so far are inference problems regarding a parameter, which can be estimated from the sample data either by a single number (a point estimate) or an entire interval of plausible values (confidence intervals). But usually, in applications, the objective is not to estimate a parameter but to decide which of two contradictory claims about the unknown parameter is correct. This is the realm of hypothesis testing.
 
+<br><br>We are interested in the parameter \(\theta\) of the underlying probability distribution which is unknown. We only know that it belongs to a certain parameter space \(\Theta\), which can be partitioned into two disjoint set \(\Theta_0\) and \(\Theta_1\).
+We must decide whether \(\theta\) lies in \(\Theta_0\) or \(\Theta_1\), i.e. 
+\[ H_0: \theta \in \Theta_0 \] or \[ H_1: \theta \in \Theta_1 \] 
+Exactly one hypothesis must be true.
+</p>
 
 
 
