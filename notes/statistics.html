@@ -3,7 +3,6 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Applied Statistics</h1>
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
@@ -27,12 +26,12 @@ The parameter average height of trees forms the decision criteria. But you do no
 <b>Taming uncertainty</b>
 <br>In the real world there are various sources of uncertainty. Rolling a die cannot be perfectly modeled due to hundreds of different factors (angle of hand, force, angle of die, material of the table, air friction, and so on). In fact, it is the characteristic complexity of the real world that the system under study is well-off as always having uncertainty and we are well-off having tools to study them. Given a system (a data-generating process), what are the properties of the outcome?
 
-<br><br>We define a sample space \(\Omega\) as the set of all possible outcomes of  a data-generating process. Actually this set must have specific properties and is called a measurable space and the space is then called \(\sigma\)-Borel space. 
+<br><br>We define a sample space \(\Omega\) as the set of all possible outcomes of  a data-generating process. Actually this set must have specific properties and is called a measurable space and the space is then called \(\sigma\)-Borel space. Points \(\omega\) sample space are called sample outcomes.
 
 <br><br>Events are the set subset of the desirable outcomes in \(\Omega\). As mentioned, the said data-generating process exhibits randomness and we still what to make sound decisions. The events \(E\) thus become our primary object of study to work upon the data-generating process/sample space.
 
 <br><br>We study probability by assigning a real number to an event in \(\Omega\) satisfying:
-<li>\(P(A) \ge 0\) 
+<li>\(P(A) \ge 0\)
 <li>\(P(\Omega) = 1\)
 <li>\(P(\cup_{i=1}^\infty A_i) = \sum_{i=1}^\infty P(A_i)\) if \(A_1, A_2..\) are disjoint
 
@@ -43,7 +42,7 @@ The parameter average height of trees forms the decision criteria. But you do no
 
 <br><br> Now the system we model and thus our decision may depend on not just one but multiple events belonging to a particular sample space. We can thus ask ourselves what different kinds of events exist and in what way can we combine them.
 <ul>
-<li>Disjoint Events 
+<li>Disjoint Events
     <br>\(P(A \cup B) = P(A) + P(B)\)
     <br>\(P(A \cap B) = \emptyset \)
   <ul>
@@ -53,17 +52,65 @@ The parameter average height of trees forms the decision criteria. But you do no
       <br>\(P(B|A) = P(B) \)
     <li>Dependent Events
       <br>\(P(A \cap B) = P(A)P(B|A) = P(B)P(A|B)\)
-      <br>\(P(A \cup B) = P(A) + P(B) - P(A|B) \) 
+      <br>\(P(A \cup B) = P(A) + P(B) - P(A|B) \)
   </ul>
-</li> 
+</li>
 </ul>
 </p>
 
 <p align="justify">
 <b>Random variables</b>
-<br>Random variables are functions that map from a random process to numbers. We can choose any mapping to a number. This enables us to do some algebra with probability and represent the probability of all events in \(\Omega\) graphically in terms of probability distributions.
+<br>Random variables are functions that map from a random process to numbers. We can choose any mapping to a number. This enables us to do some algebra with probability and represent the probability of all events in \(\Omega\) graphically in terms of probability distributions. For example,
+<li> Consider a coin flip, \(\omega\) = {H, T}. Then \(X\) can be the outcome of the flip.
+<li> Consider two consequent coin flips, \(\omega\) = {(H,H), (H,T), (T,H), (T,T)}. Then \(X\) can be the number of heads in the outcome.
+<li> Consider a roll of die, \(\omega\) = {1, 2, 3, 4, 5, 6}. Then \(X\) can be a number less than equal to 4.
 </p>
 
+<p align="justify">
+<b>Probability distribution</b>
+<br> Description of a random variable \(X\) in a probability distribution summarizes our desired outcome in the whole sample space. A nice way to think about them is to consider that they just represent the shape of the underlying distribution, just scaled.
+
+<p align="justify">
+<b>Discrete probability distribution</b>
+<br>\( pmf(x_i) = P(X = x_i) \)
+<br>\( \sum_{i} pmf(x_i) = 1, i=1,2,3... \)
+<br>For example: Bernoulli, Poisson, Uniform
+</p>
+
+<p align="justify">
+<b>Continuous probability distribution</b>
+<br>\( \int_{a}^b pdf(x) dx = P(a \lt x \lt b) \)
+<br>\( \int pdf(x) dx = 1 \)
+<br> \(P(X=x) = 0\)
+<br>For example: Normal, Exponential, Gamma, Uniform
+</p>
+
+<p align="justify">
+<b>Cumulative distribution function (CDF)</b>
+<br>Used to evaluate the accumulated probability, it is defined as the area to the left of a Probability distribution from a point of interest.
+<br>\( cdf(x) = P(X \le x)  \)
+<br>\( 0 \le cdf(x) \le 1 \)
+<br><br> In case of a discrete domain, \(cdf(x_i+1) = cdf(x_i) + pmf(x_i)\), a non-decreasing step function.
+<br><br> In case of continuous domain, \(cdf(x) = \int_{-\infty}^\infty pdf(x) dx\), a non-decreasing continuous function.
+In this case, \(P(a \lt\ x \lt b) = cdf(b) - cdf(a)\)
+
+<p align="justify">
+<b>Quantiles</b>
+<br>Consider any distribution of \(X\), say Normal. We know that \( \int pdf(x) dx = 1 \). Say you want to divide this area under the distribution into 4 equal parts. Each part would be such that the probability of \(X\) being in any of the 4 parts would be equal, i.e. each region equals 25% of the total probability.
+<br><br>Let us denote the values \(X=x_i\) that make the split happen as:
+<br>\(x_1 \rightarrow 0.25^{th} quantile\)
+<br>\(x_2 \rightarrow 0.5^{th} quantile\)
+<br>\(x_3 \rightarrow 0.75^{th} quantile\)
+<br>Hence, \(cdf(x_1) = 0.25 \implies x_1 = cdf^{-1}(0.25) \)
+<br>Similarly, \(cdf(x_2) = 0.5 \implies x_1 = cdf^{-1}(0.5) \)
+<br><br>In general a quantile, \[x_{i/n} \in X: x_{i/n} = cdf^{-1}(i/n) \]
+Note that the \(0.5^th\) quantile is just the median of the distribution.
+</p>
+
+<p align="justify">
+<b>Expectation</b>
+<br>Ask yourself, where is the average value in the range of the \(pdf(x)\) expected to be? The expectation or expected value \(E(x)\) is a measure of location of central tendency.
+</p>
 
 
 
