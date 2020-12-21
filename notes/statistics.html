@@ -3,6 +3,7 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Applied Statistics</h1>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
@@ -104,12 +105,87 @@ In this case, \(P(a \lt\ x \lt b) = cdf(b) - cdf(a)\)
 <br>Hence, \(cdf(x_1) = 0.25 \implies x_1 = cdf^{-1}(0.25) \)
 <br>Similarly, \(cdf(x_2) = 0.5 \implies x_1 = cdf^{-1}(0.5) \)
 <br><br>In general a quantile, \[x_{i/n} \in X: x_{i/n} = cdf^{-1}(i/n) \]
-Note that the \(0.5^th\) quantile is just the median of the distribution.
+Note that the \(0.5^{th}\) quantile is just the median of the distribution.
 </p>
 
 <p align="justify">
 <b>Expectation</b>
 <br>Ask yourself, where is the average value in the range of the \(pdf(x)\) expected to be? The expectation or expected value \(E(x)\) is a measure of location of central tendency.
+<br><br>Let \(X\) be a continuous-random variable with a range \([a,b]\). Then the expected value of \(X\) is defined as,
+\[E(X) = \int_{a}^b x.pdf(x) dx\]
+For a discrete random variable,
+\[E(X) = \sum_{i=1}^n x_i.pdf(x_i) \]
+For example, let \(X\) have a range \([0,2]\) and density \(\frac{3}8 x^2 \)
+<br>\(E(X) = \int_{0}^2 x.pdf(x) dx = \int_{0}^2 x\frac{3}8 x^2 dx = \frac{3}8 \Bigg[\frac{x^4}4 \Bigg ]_{0}^2 = \frac{3}2 \)
+<br> Note that the mean is on the right half of the range. Since the probability density increases quadratically as \(x\) increases over the range, the average value of \(x\) is expected to be in the right of the range.
+<br>As another example, consider \(X \sim N(0,1)\). Because of symmetry, we can infer that the expected value must be zero!
+</p>
+
+<p align="justify">
+<b>Variance</b>
+<br>Let \(X\) be a continuous random variable with expectation \(E(X)\). The variance of \(X\) is defined as:
+\[ Var(X) = E((X - \mu)^2) = E((X - E(X))^2) \]
+<br>Also, \(Var(X) = E(X^2) - E(X)^2 \)
+<br>Simply put, variance is a measure of spread of the data.
+</p>
+
+<p align="justify">
+<b>Statistical inference</b>
+<br>Now given the outcomes (sample data), what can we say about the process that generated the data? We use the data to infer, or rather approximate the underlying distribution that generated the data via:
+<li>parameter estimation: what parameter values possibly shape the underlying distribution?
+<li>hypothesis testing: is the assumed law for the underlying distribution correct or should we change it?
+<br>The only information we have is the sample!
+</p>
+
+<p align="justify">
+<b>Parameter estimation</b>
+<br>Given an underlying unknown distribution, we want to know its nature i.e. the law and the parameters that shape the distribution assuming a particular law. To find the estimates of the parameters (since that's the best we can do!), we define estimators. 
+<br>An estimator \(\widehat{\theta}\) of an underlying true parameter \(\theta\) is a function of the data. Note that \(\theta\) is a fixed quantity whereas \(\widehat{\theta}\) is a random value with the notion of an expected value and its distributionis called the sampling distribution. We can define any estimator but ofcourse, some are more useful than others. We usually care about estimator functions that map the sample of the data to parameters like mean, variance, standard deviation of the data because these are usually enough to completely define a distribution.
+<br><br>Next we want to know how to define these estimator functions \(\widehat{\theta}\) and once we have them, how can we assess their quality?
+<br><b>Q.</b>How to define an estimator function \(\widehat{\theta}\)?
+<br><b>Ans.</b>We have two methods:
+<br>1. Method of moments
+<br>2. Method of maximum likelihood  
+<br><br><b>Q.</b>How do we assess the quality of a particular estimator function \(\widehat{\theta}\)?
+<br><b>Ans.</b>We commonly use:
+<br>1. Bias
+<br>2. Mean-squared error  
+</p>
+
+<p align="justify">
+<b>Method of moments</b>
+<br>So, we are trying to arrive at a formal procedure to compute the model parameter from the observed data. Method-of-moments is one such procedure. In general, for any parameter of any distribution, we can use it for generating estimator functions of parameters. It is simple to compute but in only few cases and becomes tedious for others. Moreover it is non-optimal and is usually only used to get starting values for other methods. Given a pdf \(f(x)\), we define the \(i^{th}\) theoretical moment as:
+\[ \mu_i = \int x^i f(x) dx \]
+Note that the first theoretical moment is just the mean. In other words, the expected value has a physical interpretation as the center of mass (or the first moment in statics).
+<br>Now assume we observe an i.i.d sample \(X_1,X_2,..X_n\) from an unknown distribution \(f(x|\theta)\). Then the method of moment replaces the \(i^{th}\) theoretical moment with the \(i^{th}\) sample moment,
+\[\mu_i(\theta) = \widehat{\mu_i}\] 
+That's all there is. Again, simple to use in some cases, useless in others. Note that in d-dimensional cases, i.e. with \(d\) parameters, we would solve \(d\) such equations.
+</p>
+
+<p align="justify">
+<b>Method of maximum likelihood</b>
+<br>The maximum likelihood estimates of the parameters \(\theta_1, . . . , \theta_n\) are the
+values \(\widehat{\theta_1}, . . . , \widehat{\theta_n}\) that maximize the likelihood function.
+
+<br><br>So there is an underlying true distribution  \(X_1, X_2,...,X_n \sim P(X|\theta)\). We might know or can assume the nature of the distribution of this underlying data according to some standard distributions we can deal with. We ask ourselves, given some value of \(\widehat{\theta}\), what is the probability of seen the data \(X\)? In other words, we want to maximize \(P(X|\widehat{\theta})\). The \(\widehat{\theta})\) that does that is the maximum likelihood estimation.
+\[ P(X_1|\widehat{\theta})P(X_2|\widehat{\theta})P(X_3|\widehat{\theta})...P(X_n|\widehat{\theta}) = \prod_{1}^n P(X_i|\widehat{\theta}) = L(\widehat{\theta})\]
+
+Note that the likelihood function value would be greater when the estimated value of \(\widehat{\theta}\) would be closer to the underlying true value. Hence the idea of maximizing the likelihood.
+
+<br><br>Now when maximizing the likelihood function, it is often easier to maximize the log of the likelihood function. Taking the log converts the product to the sum. Since the log is a monotonic function, its maximum must occur for the same value of \(\widehat{\theta}\) as does the likelihood function.
+\[ \max_\widehat{\theta} \log(L(\widehat{\theta}))\] \[=\min_\widehat{\theta} \Bigg[-\log(L(\widehat{\theta})) \Bigg] \] 
+\[=\min_\widehat{\theta} \Bigg[-\sum_{i=1}^n P(X_i|\widehat{\theta})\Bigg]\]
+ 
+<br><br>In general, one can show that maximum likelihood estimators:
+<li>have bias that goes to zero for large sample sizes
+<li>have minimum variance for large sample sizes
+<li>often have approximately normal distributions for large sample sizes
+</p>
+
+<p align="justify">
+<b>Confidence intervals</b>
+<br>Confidence intervals provide an alternative to using an estimator \(\widehat{\theta}\) when we wish to estimate an unknown parameter \(\theta\).
+
 </p>
 
 
