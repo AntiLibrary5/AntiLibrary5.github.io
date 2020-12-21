@@ -1,1 +1,71 @@
-Notes on statistics
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>Applied Statistics</h1>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  </script>
+</head>
+
+<p align="justify">
+<b>What and why?</b>
+<br>Sample statistics is the science of changing your mind
+Making decisions based on facts (parameters) is hard enough as it is, but sometimes we don’t even have the facts we need. And yet decisions we must make. What we do know (the sample) is different from what we wish we knew (the population). That’s what it means to have uncertainty. Given the outcomes, what are the characteristics of the underlying system i.e. the data-generating process? And we want to quantify this to make the decisions soundly.
+
+<br><br>A simple, or rather playful example is to imagine a patch of land with trees, and you are to decide which trees to cut down shall they be under the average height of the population of the trees of Earth.
+The parameter average height of trees forms the decision criteria. But you do not know its actual value (the average of the population i.e. all the trees in the world). We would just have an estimate of this true parameter. Our decision whether we chop down a particular tree or not will depend on this estimate. As such, we want our estimate to be as close to the true value of the parameter.
+</p>
+
+<p align="justify">
+<b>Taming uncertainty</b>
+<br>In the real world there are various sources of uncertainty. Rolling a die cannot be perfectly modeled due to hundreds of different factors (angle of hand, force, angle of die, material of the table, air friction, and so on). In fact, it is the characteristic complexity of the real world that the system under study is well-off as always having uncertainty and we are well-off having tools to study them. Given a system (a data-generating process), what are the properties of the outcome?
+
+<br><br>We define a sample space \(\Omega\) as the set of all possible outcomes of  a data-generating process. Actually this set must have specific properties and is called a measurable space and the space is then called \(\sigma\)-Borel space. 
+
+<br><br>Events are the set subset of the desirable outcomes in \(\Omega\). As mentioned, the said data-generating process exhibits randomness and we still what to make sound decisions. The events \(E\) thus become our primary object of study to work upon the data-generating process/sample space.
+
+<br><br>We study probability by assigning a real number to an event in \(\Omega\) satisfying:
+<li>\(P(A) \ge 0\) 
+<li>\(P(\Omega) = 1\)
+<li>\(P(\cup_{i=1}^\infty A_i) = \sum_{i=1}^\infty P(A_i)\) if \(A_1, A_2..\) are disjoint
+
+<br><br>We first think about what is it that we're trying to model or make predictions about. We describe the model or the events in our sample space. To make decisions, we try figuring out the probability of occurrence of these events, \(P(E)\) which get mapped to real number \(\le 1\), signifying:
+<li> the relative frequency of occurrence of the event in a long sequence \(\rightarrow\) frequentist interpretation
+<li> the degree of belief that the event occurs \(\rightarrow\) bayesian interpretation
+<br>These are two different schools of thought about the same thing.
+
+<br><br> Now the system we model and thus our decision may depend on not just one but multiple events belonging to a particular sample space. We can thus ask ourselves what different kinds of events exist and in what way can we combine them.
+<ul>
+<li>Disjoint Events 
+    <br>\(P(A \cup B) = P(A) + P(B)\)
+    <br>\(P(A \cap B) = \emptyset \)
+  <ul>
+    <li>Independent Events
+      <br>\(P(A \cap B) = P(A) P(B)\)
+      <br>\(P(A|B) = P(A) \)
+      <br>\(P(B|A) = P(B) \)
+    <li>Dependent Events
+      <br>\(P(A \cap B) = P(A)P(B|A) = P(B)P(A|B)\)
+      <br>\(P(A \cup B) = P(A) + P(B) - P(A|B) \) 
+  </ul>
+</li> 
+</ul>
+</p>
+
+<p align="justify">
+<b>Random variables</b>
+<br>Random variables are functions that map from a random process to numbers. We can choose any mapping to a number. This enables us to do some algebra with probability and represent the probability of all events in \(\Omega\) graphically in terms of probability distributions.
+</p>
+
+
+
+
+
+
