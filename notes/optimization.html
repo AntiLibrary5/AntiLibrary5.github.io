@@ -105,7 +105,7 @@ For \(h\) small enough, we get the quadratic approximation of \(f\),
 <p align="justify">
 <b>Local minima</b>
 <br>\[x^*: \exists \textrm{ a neighborhood } V \textrm{ of } x^* \textrm{ s.t. }\]
-<br>\[\forall x \in V: f(x) \ge f(x^*)\]
+\[\forall x \in V: f(x) \ge f(x^*)\]
 given,
 <br>\(f: \mathbb{R} \rightarrow \mathbb{R} \textrm{ is differentiable }\)
 <br>\(f'(x) = 0 \textrm{ at optimal points }\)
@@ -122,9 +122,9 @@ given,
 <p align="justify">
 <b>Optimality conditions</b>
 <br>Assume that \(f\) is twice continuously differentiable.
-<br><i>Necessary conditions:</i>
+<br><br><i>Necessary conditions:</i>
 <br>If \(x^*\) is a local minimum, then \(\nabla f(x^*) = 0 \textrm{ and } \nabla^2 f(x^*) \) is positive semi-definite.
-<br><i>Sufficient conditions:</i>
+<br><br><i>Sufficient conditions:</i>
 <br>If \(x^*\) which satisfies \(\nabla f(x^*) = 0 \textrm{ and } \nabla^2 f(x^*) \) is positive-definite, then \(x^*\) is a strict local minimum
 </p>
 
@@ -138,7 +138,7 @@ given,
 <br>If \(f\) is differentiable, then it is convex iff \(\forall x,y\),
 \[ f(y) - f(x) \ge \nabla f(x).(y-x) \]
 <i>Theorem:</i>
-<br>If \(f\) is continuously differentiable twice, then it is convex iff \( \nabla^2 f(x) \textrm{ is positve semi-definite } \forall x\).
+<br>If \(f\) is continuously differentiable twice, then it is convex iff \( \nabla^2 f(x) \textrm{ is positive semi-definite } \forall x\).
 <br><br>For differentiable and convex functions, critical points are global minima of the function.
 </p>
  
@@ -179,8 +179,29 @@ Examples include BFGS, L-BFGS.
 \[ \nabla Q(w) = \frac{1}{N} \sum_{i=1}^N \nabla Q_i (w) \] and 
 \[ w_{t+1} = w_t - \sigma_t \nabla Q(w) \]
 Now typically \(N\) can be very large and computation of all \(\nabla Q_i(w)\) would be expensive. So instead, we can use an approximation of \(\nabla Q(w)\),
-\[ \nabla Q(w) \sim \nabla Q_i(w) \textrm{, gradient of a single example} \]
+\[ \nabla Q(w) \approx \nabla Q_i(w) \textrm{, gradient of a single example} \]
 or do a mini-batch,
-\[ \nabla Q(w) \sim \frac{1}{n_{batch}} \sum_{i=1}^{n_{batch}} \nabla Q_i (w) \]
+\[ \nabla Q(w) \approx \frac{1}{n_{batch}} \sum_{i=1}^{n_{batch}} \nabla Q_i (w) \]
 This is the idea of stochastic gradient descent.
+</p>
+
+
+
+<p align="justify">
+<b>Constrained optimization</b>
+<br>Given a constrained optimization problem,
+\[\textrm{min } f(x),f:\mathbb{R}^n \mapsto \mathbb{R}\]
+subject to,
+\[g_i(x) \le 0\]
+then the minima can either lie in the feasible region, or in the non-feasible region. In the former case, the constraint \(g_i(x)\) plays no role and is then referred to as an inactive constraint. In the latter case, the best minima we can get would be at the boundary of the constraint and it is then referred to as an active constraint. In this case, \(\nabla f(x^*) \textrm{ & } \nabla g(x^*) \) would be co-linear i.e.,
+\[ \exists \lambda \in \mathbb{R} \textrm{ s.t. }\]
+\[ \nabla f(x^*) = - \lambda \nabla g(x^*) \]
+\[ \implies \nabla f(x^*) + \lambda \nabla g(x^*) = 0 \]
+where \(\lambda\) is known as the Lagrange-multiplier and 
+<br>if the constraint is inactive, \(\lambda = 0\)
+<br>if the constraint is active, \(\lambda > 0\)
+<br>In general, the following (KKT conditions) must hold,
+\[\lambda \ge 0\]
+\[g(x) \le 0\]
+\[\lambda g(x) = 0\]
 </p>
