@@ -23,7 +23,7 @@ subject to,
 \[g_i(x) \le 0\]
 \[h_i(x) = 0\]
 where,
-<br>\( \Omega: \textrm{search space} \)  
+<br>\( \Omega: \textrm{search space} \)
 <br>\(x: \textrm{domain}\)
 <br>\(g_i(x): \textrm{inequality constraint}\)
 <br>\(h_i(x): \textrm{equality constraint}\)
@@ -48,3 +48,110 @@ where,
 <li>Deterministic vs Stochastic outcome of objective functions
 <li>Single or multiple objective functions
 </ul>
+Here we discuss notions of continuous optimization.
+</p>
+
+<p align="justify">
+<b>1st order derivability or differentiability</b>
+<br>Assuming n=1, let \(f: \mathbb{R} \mapsto \mathbb{R}\)
+<br>We say that \(f\) is differentiable in \(x\) if,
+\[ \lim_{h \to 0} \frac{f(x+h) - f(x)}h \textrm{ exists} \]
+This limit is denoted by \(f'(x)\) and is called derivative of \(f\) in \(x\).
+</p>
+
+<p align="justify">
+<b>Taylor's 1st order approximation</b>
+<br>If \(f\) is differentiable in \(x\), then the first order Taylor's expansion is given by
+\[f(x+h)=f(x)+f'(x)h+o(||h||)\]
+For \(h\) small enough, \(h \mapsto f(x+h)\) is approximated by,
+\[h \mapsto f(x) + f'(x)h \]
+giving the first order approximation of \(f\).
+</p>
+
+<p align="justify">
+<b>Gradient</b>
+<br>We can generalize the notion of derivative to hihger dimensions. Given \(f: \mathbb{R}^n \mapsto \mathbb{R}\),
+\[\nabla f_x = \left(\begin{array}{c} \frac{\partial f(x)}{\partial x_1} \\ . \\.\\.\frac{\partial f(x)}{\partial x_n} \end{array}\right) \]
+The gradient of a differentiable function is orthogonal to the level sets.
+</p>
+
+<p align="justify">
+<b>2nd order derivability or differentiability</b>
+<br>Let \(f: \mathbb{R}^n \mapsto \mathbb{R}\) be differentiable on \(\mathbb{R}\) and let,
+\[f:x \mapsto f'(x) \]
+be its derivative function.
+Now if \(f'\) is derivable, then we denote \(f''(x)\) as the second order derivative of \(f \).  
+</p>
+
+<p align="justify">
+<b>Taylor's 2nd order approximation</b>
+<br>If the second order derivative of \(f\) exists then the second order Taylor expansion is given by,
+\[f(x+h)=f(x) + f'(x)h + \frac{1}{2}f''(x)h^2 + o(||h||^2)\]
+For \(h\) small enough, we get the quadratic approximation of \(f\), 
+\[h \mapsto f(x) + f'(x)h + \frac{1}{2}f''(x)h^2 \]
+</p>
+
+<p align="justify">
+<b>Hessian</b>
+<br>Again, we can generalize the second order derivative to functions \(f: \mathbb{R}^n \mapsto \mathbb{R}\) with the notion of Hessian matrix,
+\[ \mathbb{H}(x) = \nabla^2 f(x) = \begin{bmatrix} \frac{\partial^2 f(x)}{\partial x_1^2} & . & . & \frac{\partial^2 f(x)}{\partial x_1 \partial x_n} \\
+. & . & . & . \\
+. & . & . & . \\
+ \frac{\partial^2 f(x)}{\partial x_n \partial x_1} & . & . & \frac{\partial^2 f(x)}{\partial x_n^2} \end{bmatrix}\]
+ If \(f(x) = \frac{1}{2}x^TAx\) with \(A\) being symmetric, then 
+ \[ \mathbb{H}(f(x)) = \nabla^2 f = A \]
+</p>
+
+
+<p align="justify">
+<b>Gradient direction vs Newton direction</b>
+<br>The gradient direction \(\nabla F(x)\) defines the direction of maximum ascend. The negative of the gradient then gives us a amximum descent direction and it directly points towards the optimum i.f.f \(\nabla^2 f(x) = \mathbb{H} = I \)and the condition number of the Hessian is equal to 1. But in cases with poor conditioning, gradient descent becomes slow to converge. 
+
+<br><br>For convex quadratic functions, the Newton direction points towards the optimum independent of the condition number of the Hessian matrix. 
+Recall the second order approximation,
+\[f(x+h) = f(x) + f'(x)h + \frac{1}{2}f''(x)h^2 \]
+We seek a step such that \(\nabla f(x+h) = 0\). This implies that,
+\[f'(x) + f''(x)h = 0 \]
+\[\implies h = - [f''(x)]^{-1} f'(x) \]
+gives the Newton direction.
+</p>
+
+<p align="justify">
+<b>Local minima</b>
+<br>\[x^*: \exists \textrm{ a neighborhood } V \textrm{ of } x^* \textrm{ s.t. }\]
+<br>\[\forall x \in V: f(x) \ge f(x^*)\]
+given,
+<br>\(f: \mathbb{R} \rightarrow \mathbb{R} \textrm{ is differentiable }\)
+<br>\(f'(x) = 0 \textrm{ at optimal points }\)
+</p>
+
+<p align="justify">
+<b>Global minima</b>
+<br>\[\forall x \in \Omega: f(x) \ge f(x^*)\]
+given,
+<br>\(f: \mathbb{R} \rightarrow \mathbb{R} \textrm{ is differentiable }\)
+<br>\(f'(x) = 0 \textrm{ at optimal points }\)
+</p>
+
+<p align="justify">
+<b>Optimality conditions</b>
+<br>Assume that \(f\) is twice continuously differentiable.
+<br><i>Necessary conditions:</i>
+<br>If \(x^*\) is a local minimum, then \(\nabla f(x^*) = 0 \textrm{and} \nabla^2 f(x^*) \) is positive semi-definite.
+<br><i>Sufficient conditions:</i>
+<br>If \(x^*\) which satisfies \(\nabla f(x^*) = 0 \textrm{and} \nabla^2 f(x^*) \) is positive-definite, then \(x^*\) is a strict local minimum
+</p>
+
+
+<p align="justify">
+<b>Convex functions</b>
+<br><i>Theorem:</i>
+<br>Let \(f: U \subset \mathbb{R}^n \mapsto \mathbb{R} \), then \(f\) is convex if \(\forall t \in [0,1] \),
+\[ f(tx + (1-t)y) \le tf(x) + (1-t)y \]
+<i>Theorem:</i>
+<br>If \(f\) is differentiable, then it is convex iff \(\forall x,y\),
+\[ f(y) - f(x) \ge \nabla f(x).(y-x) \]
+<i>Theorem:</i>
+<br>If \(f\) is continuously differentiable twice, then it is convex iff \( \nabla^2 f(x) \textrm{ is positve semi-definite} \forall x\).
+<br><br>For differentiable and convex functions, critical points are global minima of the function.
+</p>
