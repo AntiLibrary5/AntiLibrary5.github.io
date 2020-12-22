@@ -3,4 +3,48 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Optimization</h1>
-This will take some time to prepare. 
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  </script>
+</head>
+
+<p align="justify">
+<b>What is it?</b>
+<br>Given a search space (set of all possible solutions) and an objective function (quality criteria), find the best solution for a given criteria. Formally,
+\[\textrm{min/max } \mathbb{F}:\Omega \mapsto \mathbb{R}\]
+\[x \mapsto \mathbb{F}(x)\]
+subject to,
+\[g_i(x) \le 0\]
+\[h_i(x) = 0\]
+where,
+<br>\( \Omega: \textrm{search space} \)  
+<br>\(x: \textrm{domain}\)
+<br>\(g_i(x): \textrm{inequality constraint}\)
+<br>\(h_i(x): \textrm{equality constraint}\)
+<br><br>Examples:
+<li>Combinatorial optimization (knapsack problem, traveling salesman problem)
+<li>Constrained continuous optimization (optimizing a 2-phase nozzle, design of a launcher)
+<li>Stochastic optimization (covariance matrix adaptation strategy for optimization)
+<li>Supervised learning (linear regression, classification with SVM)
+<li>Hyperparameter tuning
+<li>Interactive optimization (coffee tasting problem)
+
+<br><br>We observe that there are many problems with different properties. In practice, most can be categorized for which optimal algorithms exist. The categorization exists as follows:
+<ul>
+<li>Discrete vs Continuous
+  <ul>
+  <li>Discrete: integer programming, Combinatorial problems
+  <li>Continuous: linear, quadratic, smooth/non-smooth, black-box
+  <li>Both discrete and continuous variales: mixed integer problems
+  <li>Categorical variables (no order)
+  </ul>
+<li>Unconstrained vs Constrained
+<li>Deterministic vs Stochastic outcome of objective functions
+<li>Single or multiple objective functions
+</ul>
