@@ -102,20 +102,6 @@ For \(h\) small enough, we get the quadratic approximation of \(f\),
  \[ \mathbb{H}(f(x)) = \nabla^2 f = A \]
 </p>
 
-
-<p align="justify">
-<b>Gradient direction vs Newton direction</b>
-<br>The gradient direction \(\nabla F(x)\) defines the direction of maximum ascend. The negative of the gradient then gives us a amximum descent direction and it directly points towards the optimum i.f.f \(\nabla^2 f(x) = \mathbb{H} = I \)and the condition number of the Hessian is equal to 1. But in cases with poor conditioning, gradient descent becomes slow to converge. 
-
-<br><br>For convex quadratic functions, the Newton direction points towards the optimum independent of the condition number of the Hessian matrix. 
-Recall the second order approximation,
-\[f(x+h) = f(x) + f'(x)h + \frac{1}{2}f''(x)h^2 \]
-We seek a step such that \(\nabla f(x+h) = 0\). This implies that,
-\[f'(x) + f''(x)h = 0 \]
-\[\implies h = - [f''(x)]^{-1} f'(x) \]
-gives the Newton direction.
-</p>
-
 <p align="justify">
 <b>Local minima</b>
 <br>\[x^*: \exists \textrm{ a neighborhood } V \textrm{ of } x^* \textrm{ s.t. }\]
@@ -137,9 +123,9 @@ given,
 <b>Optimality conditions</b>
 <br>Assume that \(f\) is twice continuously differentiable.
 <br><i>Necessary conditions:</i>
-<br>If \(x^*\) is a local minimum, then \(\nabla f(x^*) = 0 \textrm{and} \nabla^2 f(x^*) \) is positive semi-definite.
+<br>If \(x^*\) is a local minimum, then \(\nabla f(x^*) = 0 \textrm{ and } \nabla^2 f(x^*) \) is positive semi-definite.
 <br><i>Sufficient conditions:</i>
-<br>If \(x^*\) which satisfies \(\nabla f(x^*) = 0 \textrm{and} \nabla^2 f(x^*) \) is positive-definite, then \(x^*\) is a strict local minimum
+<br>If \(x^*\) which satisfies \(\nabla f(x^*) = 0 \textrm{ and } \nabla^2 f(x^*) \) is positive-definite, then \(x^*\) is a strict local minimum
 </p>
 
 
@@ -152,6 +138,49 @@ given,
 <br>If \(f\) is differentiable, then it is convex iff \(\forall x,y\),
 \[ f(y) - f(x) \ge \nabla f(x).(y-x) \]
 <i>Theorem:</i>
-<br>If \(f\) is continuously differentiable twice, then it is convex iff \( \nabla^2 f(x) \textrm{ is positve semi-definite} \forall x\).
+<br>If \(f\) is continuously differentiable twice, then it is convex iff \( \nabla^2 f(x) \textrm{ is positve semi-definite } \forall x\).
 <br><br>For differentiable and convex functions, critical points are global minima of the function.
+</p>
+ 
+<p align="justify">
+<b>Difficulties</b>
+<br>Functions can be difficult to optimize due to:
+<li>non-linearity, non-quadratic, non-convex
+<li>ruggedness
+<li>dimensionality
+<li>non-separability
+<li>ill-conditioning
+</p>
+
+<p align="justify">
+<b>Gradient direction vs Newton direction</b>
+<br>The gradient direction \(\nabla F(x)\) defines the direction of maximum ascend. The negative of the gradient then gives us a amximum descent direction and it directly points towards the optimum i.f.f \(\nabla^2 f(x) = \mathbb{H} = I \)and the condition number of the Hessian is equal to 1. But in cases with poor conditioning, gradient descent becomes slow to converge. 
+
+<br><br>For convex quadratic functions, the Newton direction points towards the optimum independent of the condition number of the Hessian matrix. For other functions, Newton direction will not always point towards the optimum but is still a good direction to follow.
+Recall the second order approximation,
+\[f(x+h) = f(x) + f'(x)h + \frac{1}{2}f''(x)h^2 \]
+We seek a step such that \(\nabla f(x+h) = 0\). This implies that,
+\[f'(x) + f''(x)h = 0 \]
+\[\implies h = - [f''(x)]^{-1} f'(x) \]
+gives the Newton direction.
+<br>In some settings, we can compute the Newton direction analytically in which case we should. Yet we need to approximate numerically \(\nabla^2 f(x)\) and invert it which can be very expensive.
+</p>
+
+<p align="justify">
+<b>Quasi-Newton methods</b>
+<br>In these methods, we try to get the best of Newton methods but avoiding expensive computation  by updating \(\mathbb{H}_t\) iteratively using \(\nabla f(x_t)\) and this lets us approximate the inverse of \(\nabla^2 f(x_t)\),
+\[ x_{t+1} = x_t - \sigma_t \mathbb{H}_t  \(\nabla f(x_t)\) \]
+Examples include BFGS, L-BFGS.
+</p>
+
+<p align="justify">
+<b>Stochastic gradient descent</b>
+<br>With gradient descent,
+\[ \nabla Q(w) = \frac{1}{N} \sum_{i=1}^N \nabla Q_i (w) \] and 
+\[ w_{t+1} = w_t - \sigma_t \nabla Q(w) \]
+Now typically \(N\) can be very large and computation of all \(\nabla Q_i(w)\) would be expensive. So instead, we can use an approximation of \(\nabla Q(w)\),
+\[ \nabla Q(w) \sim \nabla Q_i(w) \textrm{, gradient of a single example} \]
+or do a mini-batch,
+\[ \nabla Q(w) \sim \frac{1}{n_{batch}} \sum_{i=1}^{n_{batch}} \nabla Q_i (w) \]
+This is the idea of stochastic gradient descent.
 </p>
