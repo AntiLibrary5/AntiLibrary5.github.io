@@ -3,4 +3,71 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Machine Learning</h1>
-This will take a lot of time. 
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  </script>
+</head>
+
+<p align="justify">
+<b>Why?</b>
+<br>
+What changes with Machine Learning from Statistics? There is a slight caveat with respect to the end goal. Statistics and its tools focus on finding knowledge about the world. Machine Learning is more about making predictions.
+</p>
+
+<p align="justify">
+<b>Linear Regression</b>
+<br>
+Linear regression is simple enough to understand notions of machine learning. For some given function of data, the basic idea is to find parameters (slope and offset) using part of the data which gives it the best fit-'learning', and there on is expected to also fit some other related data with some error-'predictions'. This particular task is simple enough and can be solved analytically. But we look at the machine learning paradigm which allows us to build on more complicated tasks.
+
+<br>Given \(x^d_1, x^d_2,...,x^d_N\), we want to find parameters \(\theta_{1 \times D}\)  s.t. the Mean-Squared Error is lowest between the output of \(f(x_i) = \theta x_i + b\) for \(i=1,2,...,N\) and the actual known output \(y_i\):
+\[\textrm{min} \quad L(\theta) = \frac{1}{N} \sum_{i=1}^N (y_i - f(x_i))^2\]
+Again, we can solve for this analytically but we want to define a numerical procedure that would also work with complex problems in higher dimensions.
+<br><i>Gradient Descent:</i>
+The gradient of a function at a given point gives the direction of maximum increase of that function. Gradients can be efficiently computed numerically atleast for convex quadratic functions (this is the case of MSE). As such, we can use the negative gradient to find and iteratively update the parameters in the negative gradient direction \(\theta_{1 \times D}\) after an initial guess, which would cause our loss function to MSE decrease until we arrive at an acceptable minima of the loss function. 
+\[\nabla L(\theta) = \frac{2}{N} \sum_{i=1}^N (y_i - \theta x_i)x_i\]
+We can thus use the following update rule:
+\[\theta \leftarrow \theta - \eta \nabla L(\theta)\]
+to arrive at a minimum of the MSE function.
+<br>Note that analytically,
+\[\theta \rightarrow \theta_{min}\]
+for 
+\[\nabla L(\theta) = 0\]
+\[\implies \frac{2}{N} \sum_{i=1}^N (y_i - \theta x_i)x_i = 0\]
+\[\implies \sum_{i=1}^N (y_i x_i - \theta {x_i}^2) = 0\]
+\[\implies \theta = \frac{\sum_{i=1}^N y_i x_i}{\sum_{i=1}^N {x_i}^2}\]
+\[\implies \theta = (X^T X)^{-1} X^T y\]
+where \(X\) is the data matrix.
+Note that if \((X^T X)^{-1} = I\), which would be the case if \(X\) is an orthogonal matrix (\(x_i\) are othogonal features with \(x^T_i x_j = 1  \) and thus uncorelated) with norm 1, then \(\theta = X^T y\), i.e. the regression coefficients of each predictor can be computed independently, which is a great simplification. This is one of the motivations for PCA and whitening.  
+</p>
+
+<p align="justify">
+<b>Linear Model for classification</b>
+<br>Linear classification means dividing the input space into region via decision boundaries/surfaces which are linear functions of the input vector \(X\).
+
+<br>There are two distinct approaches to classification:
+<li>Discriminative models
+<li>Generative models
+
+<br><br>The simpler ones, discriminant functions takes the input data vector and assigns it to one og the \(K\) classes. Consider the simplest linear discriminant function of parameters \(\theta\) for two classes,
+\[f(x) = \theta^T x\]
+such that \(x_i \in K_1 \textrm{ if } f(x_i) \ge 0 \textrm{ and } x_i \in K_2 \textrm{ if } f(x_i) < 0 \).
+This implies that the decision boundary is defined by \(f(x) = 0\).
+<br>Now, for any point \(x_a, x_b\) in the input space, \[f(x_a) = f(x_b) = 0\]
+\[\implies f(x_a) - f(x_b) = 0\]
+\[\implies \theta^T x_a - \theta^T x_b = 0 \]
+\[\implies \theta^T (x_a - x_b) = 0\]
+Therefore, the parameter vector \(\theta^T\) must be orthogonal to every data vector lying on the decision boundary, i.e. \(\theta^T\) determines the orientation of the decision boundary. It can also be derived that for any data point \(x_i\),
+\[x_i = c \frac{\theta}{||\theta||} + x_i{_\perp}\] 
+\[\implies \theta^T x_i = \theta^T \bigg[c \frac{\theta}{||\theta||} + x_i{_\perp} \bigg]\]
+\[\implies f(x_i) = \theta^T c \frac{\theta}{||\theta||} + \theta^T x_i{_\perp} \]
+\[\implies f(x_i) = c \frac{\theta^T\theta}{||\theta||} = c \frac{||\theta||^2}{||\theta||} = c ||\theta ||\]
+\[\implies c = \frac{f(x_i)}{||\theta||} \]
+Again, following an approach similar to linear regression, the parameter vector can be determined by minimizing the MSE function. A new input can then be assigned to the class for which the output \(f(x_i)=\theta^T x_i \) is largest. But this approach performs poorly with classification problems due to the lack of robustness to outliers. Another reason for poor performance is that least-squares correspond to maximum-likelihood formulation under a gaussian assumption and binary target variables are ofcourse do not have a gaussian distribution. Hence we now look at an alternative, the perceptron criteria.
+</p>
+
