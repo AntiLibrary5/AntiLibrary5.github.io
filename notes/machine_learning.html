@@ -71,3 +71,45 @@ Therefore, the parameter vector \(\theta^T\) must be orthogonal to every data ve
 Again, following an approach similar to linear regression, the parameter vector can be determined by minimizing the MSE function. A new input can then be assigned to the class for which the output \(f(x_i)=\theta^T x_i \) is largest. But this approach performs poorly with classification problems due to the lack of robustness to outliers. Another reason for poor performance is that least-squares correspond to maximum-likelihood formulation under a gaussian assumption and binary target variables are ofcourse do not have a gaussian distribution. Hence we now look at an alternative, the perceptron criteria.
 </p>
 
+
+<p align="justify">
+<b>The perceptron algorithm</b>
+<br>
+The perceptron criteria is defined as follows,
+\[L_p(\theta) = -\sum_{n \in M} \theta^T \phi(x_n) t_n\]
+where \(\phi(.)\) can be a non-linear transformation, \(M\) the subset of points that are incorrectly classified and \(t_n \in {-1, +1} \). Therefore, \(L_p(\theta)\) associates a zero erroe with any pattern that is correctly classified, else minimizes \(-\theta^T \phi(x_n) t_n\), i.e. the contribution to the error for a misclassified pattern is a linear function of \(\theta\) and zero elsewhere. Being a piecewise linear function, gradient descent can be applied.
+\[\theta_{t+1} = \theta_{t} - \eta \nabla L_p(\theta) \]
+\[\implies \theta_{t+1} = \theta_{t} - \eta \phi(x_n) t_n \]
+So, for each pattern \(x_n\), if it is correctly classified, \(\theta\) remains unchanged. If it is incorrectly classified then,
+<br>for \(K_1\) i.e. \(t_n = +1\), \(\theta_{t+1}\) decreases by \(\eta \phi(x_n)\), whereas
+<br>for \(K_2\) i.e. \(t_n = -1\), \(\theta_{t+1}\) increases by \(\eta \phi(x_n)\).
+<br>Note that as \(\theta\) changes, \(M\) changes.
+<br>The perceptron algorithm is guaranteed to converge if the data is linearly separable, else will never converge. Also it does not genralize for \(K > 2\).
+</p>
+
+<p align="justify">
+<b>Principal Component Analysis</b>
+<br>
+The essence of PCA lies in the fact that across many data sets, the data points will lie close to a manifold of much lower dimensionality than that of the original data space. Thus we want to exploit this manifold structure for dimensionality reduction, lossy data compression, feature extraction and data visualization. PCA seeks orthogonal projection of data onto a lower dimensional linear space such that,
+<li> variance of the projected data is maximized
+<li> mean squared distance between the data points and their projection is minimized
+<br><br>Both these statements are equivalent. Here we look at the maximum variance formulation.
+<br><br>We need to project the data onto a space of dimensionality \(M < D\) while maximizing the variance of the projected data. Consider first the projection onto \(M=1\). We define its direction using a d-dimensional vector \(u_1\).
+<br>Since we are only interested in the direction, we constraint it to be a unit vector \(||u||^2 = 1 \implies u^T u = 1\).
+<br>Each data point \(x_i\) is then projected onto a scalar value \(u^T x_i\). Then, the mean of the projected data is,
+\[u^T \bar{x} = u_1^T \bigg[ \frac{1}{N} \sum_{i=1}^N x_i \bigg] \] 
+and the variance of the projected data is,
+\[\frac{1}{N} \sum_{i=1}^N (u_1^T x_i - u_1^T \bar{x})^2 = u_1^T S u_1 \]
+where S represents the data covariance matrix.
+<br>Now, we need to maximize the variance \(u_1^T S u_1 \) w.r.t \(u_1\) subject to \(u_1^T u_1 = 1\). This is a constrained optimization problem and thus we can use Lagrange Multipliers to turn it into an unconstrained problem,
+\[f(u_1) = u_1^T S u_1 + \lambda (1 - u_1^T u_1) \]
+Putting \(\nabla f(u_1) = 0\) we get,
+\[2 S u_1 - 2 \lambda u_1 = 0\]
+\[\implies S u_1 = \lambda u_1\]
+This means that \(u_1\), the projection direction must be an eigenvector of the data co-variance matrix \(S\) with eigenvalues \(\lambda\).
+\[\implies u_1^T S u_1 = u_1^T \lambda u_1 = \lambda u_1^T u_1 = \lambda\]
+Hencem the variance of the projected data will be maximum in the direction of eigenvector of \(S\) with the largest eigenvalue. This would be the first principle component.
+<br>In the general case of M-dimensional projection, the optimal linear projection for which the variance of the projected data is maximized will be the \(M\) eigenvectors \(u_1, u_2, ..., u_M\) of the data co-variance matrix \(S\) corresponding to \(M\) largest eigenvalues.
+<br><br>When we project the data onto the principle compnenents which are orthogonal, the resulting representation has a diagonal co-variance matrix which implies that the individual features are now uncorelated. Thus we kind of disentangle the unknown factors of variation in the underlying data. This disentangling takes place by finding a rotation of the input space that aligns the principal axes of variance with the basis of the new representation. 
+<br><br>This uncorelation of data gives nice numerical properties since features with strong co-relation makes the data co-variance matrix \(X^T X\) (ssuming zero mean) to be ill-conditioned (large eigenvalues in some directions, very small in other).
+</p>
