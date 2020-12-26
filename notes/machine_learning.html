@@ -113,3 +113,50 @@ Hencem the variance of the projected data will be maximum in the direction of ei
 <br><br>When we project the data onto the principle compnenents which are orthogonal, the resulting representation has a diagonal co-variance matrix which implies that the individual features are now uncorelated. Thus we kind of disentangle the unknown factors of variation in the underlying data. This disentangling takes place by finding a rotation of the input space that aligns the principal axes of variance with the basis of the new representation. 
 <br><br>This uncorelation of data gives nice numerical properties since features with strong co-relation makes the data co-variance matrix \(X^T X\) (ssuming zero mean) to be ill-conditioned (large eigenvalues in some directions, very small in other).
 </p>
+
+<p align="justify">
+<b>The Kernel Trick</b>
+<br>
+Many linear models use the data \(x\) only through inner products \(X^T X\). Because of this, such models can be made non-linear in a very general way. This is because in general, we can map our data \(x\) using some non-linear, higher dimension function \(\phi(.)\). Now, if our model us using the data in a dot product, then with the mapping, we have \(<\phi(x),\phi(x')>\). Now, Mercer's theorem states that a symmetric function mapping \(k(x,x')\) if is positive semi-defnite, can be expressed as an inner product \(k(x,x') = <\phi(x),\phi(x')>\). This is called a kernel.
+
+<br><br>Note that \(\phi(.)\) is a mapping in higher-dimensional where as the function \(k(.)\) as described is a function of the original data in its original dimensions. This is powerful because this means we can replace \(<\phi(x),\phi(x')>\) in algorithms with \(k(.)\) which gives us an implicit feature mapping while performing computations only on the original data.
+
+<br><br>Say you have 300 features and you decide to use a feature map with a 3rd order polynomial, you would have about \(300^3\) dimensions after the mapping. That’s difficult to deal with computationally. With standard kernel, you would have the same effect, but you would just be dealing with a function in the original dimension: k(x,x') because mercer condition ensures that certain \(\phi(x).\phi(x')=k(x,x')\).
+
+<br><br> So we just use this hack that certain dot products exist (higher dimensional) which is equal to this special function (original dimensional) and the fact that most of ML models have a dot product somewhere. So \(\phi(x)\) is expensive. \(\phi(x).\phi(x’)\) although expensive, but yet inexpensive relatively just because \(\phi(x).\phi(x’)\) can be replaced by \(k(x,x')\).
+
+<br><br>Also, we can just use the standard kernels or their combinations (guaranteed to respect Mercer's conditions) without thinking about how to come up with a feature map \(\phi(.)\).
+
+To put it concretely, consider a linear regression model,
+\[ L(\theta) = \frac{1}{2} \sum (\theta^T \phi(x_i) - y_i)^2 + \frac{\lambda}{2} \theta^T \theta \]
+
+putting \(\nabla L(\theta) = 0\)
+
+\[ \theta = -\frac{1}{\lambda} \sum (\theta^T \phi(x_i) - y_i) \phi(x_i) \]
+
+Let \( \alpha_i = -\frac{1}{\lambda} \sum (\theta^T \phi(x_i) - y_i) \)
+
+\[ \implies \theta = -\frac{1}{\lambda} \sum \alpha_i \phi(x_i) = \Phi^T a \]
+
+where \( \Phi(x) \) is the data design matrix as before just with an applied mapping \(\phi(.)\).
+Thus, we have a dual representation using \(\theta = \Phi^T a\),
+\[ L(a) = \frac{1}{2} ( a^T \Phi \Phi^T - y )^2 + \frac{\lambda}{2} a^T \Phi \Phi^T a \]
+\[ \qquad \qquad \qquad \qquad \qquad = \frac{1}{2} a^T \Phi \Phi^T \Phi \Phi^T a + \frac{1}{2} y^T y + a^T \Phi \Phi^T y + \frac{\lambda}{2} a^T \Phi \Phi^T a \]
+
+Define \(K = \Phi \Phi^T \)
+\[\therefore L(a) = \frac{1}{2} a^T K K a + \frac{1}{2} y^T y + a^T K y + \frac{\lambda}{2} a^T K a \]
+
+Again putting the gradient of the loss function to zero. We get,
+\[ a K K - K y + \lambda K a = 0 \]
+\[ \implies a(KK + \lambda K) = K y \]
+\[ \implies a(K + \lambda I) = y \]
+\[ \implies a = (K + \lambda I)^{-1} y \]
+\[ \therefore y = \theta^T \Phi = a^T \Phi \Phi = (K + \lambda I)^{-1} y K \]
+Thus we see the dual representation allows the solution to the least square problem to be expressed entirely in terms of the kernel. We can therefore work directly in terms of the kernel and avoid explicit introduction of the feature vector \(\phi(.)\) which allows us implicitly to use feature spaces of high dimensionality. And this dual representation based on the kernel is a property of many linear models (with their quadratic solutions exhibiting fast convergence, only global optima) including perceptron, SVM and more.
+
+<br>To sum up, the kernel trick is powerful for the following reasons,
+<li>it enables us to learn models that are non-linear as a function of \(x\) using convex
+<li>kernel function \(k\) admits implementation that is more computationally efficient than constructing a feature map \(\phi(.)\) and explicity applying them on the data and taking their dot products
+<li>\(k(x,x')\) is a tractable function of \(x\) even when \(\phi(x)\) might be intractable
+</p> 
+
