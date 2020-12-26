@@ -153,10 +153,8 @@ Again putting the gradient of the loss function to zero. We get,
 \[ \implies a = (K + \lambda I)^{-1} y \]
 \[ \therefore y = \theta^T \Phi = a^T \Phi \Phi = (K + \lambda I)^{-1} y K \]
 Thus we see the dual representation allows the solution to the least square problem to be expressed entirely in terms of the kernel. We can therefore work directly in terms of the kernel and avoid explicit introduction of the feature vector \(\phi(.)\) which allows us implicitly to use feature spaces of high dimensionality. And this dual representation based on the kernel is a property of many linear models (with their quadratic solutions exhibiting fast convergence, only global optima) including perceptron, SVM and more.
-
-<br>To sum up, the kernel trick is powerful for the following reasons,
+To sum up, the kernel trick is powerful for the following reasons,
 <li>it enables us to learn models that are non-linear as a function of \(x\) using convex
 <li>kernel function \(k\) admits implementation that is more computationally efficient than constructing a feature map \(\phi(.)\) and explicity applying them on the data and taking their dot products
 <li>\(k(x,x')\) is a tractable function of \(x\) even when \(\phi(x)\) might be intractable
 </p> 
-
