@@ -162,20 +162,19 @@ To sum up, the kernel trick is powerful for the following reasons,
 <p align="justify">
 <b>Support Vector Machines</b>
 <br>
-Recall that the perceptron algorithm is guaranteed to find a decision boundary for linearly separable data. But the results depend highly upon the initialization. SVM is a more systematic and an optimal approach for finding the decision boundary - in a way that maximizes the buffer around.\\
-\\
-Given training data \((x^1, t^1), (x^2, t^2),...,(x^n, t^n) \in \mathbb{R}^d x {-1, +1} \), a 2-class problem with linear model is:
+Recall that the perceptron algorithm is guaranteed to find a decision boundary for linearly separable data. But the results depend highly upon the initialization. SVM is a more systematic and an optimal approach for finding the decision boundary - in a way that maximizes the buffer around. 
+<br>Given training data \( (x^1, t^1), (x^2, t^2),...,(x^n, t^n) \), a 2-class problem with linear model is: 
 \[ y(x) = \theta^T \phi(x) + b \]
-Assume the problem to be linearly separable in the feature space. Then \( \exists w \in \mathbb{R}^d, b \in \mathbb{R}\) such that \( t_n y(x_n) > 0 \) for all training points (just think of the product of the sign you would get if the class was correctly or incorrectly identified).\\
-\\
-Now, we are interested in \(\theta, b\) s.t. the margin \(M\) (the perpendicular distance between the decision boundary amd the closest of the data points) is maximized.\\
-Again, as previously discussed, for any data point \(x_i\),
+Assume the problem to be linearly separable in the feature space. Then \( \exists w \in \mathbb{R}^d, b \in \mathbb{R}\) such that \( t_n y(x_n) > 0 \) for all training points (just think of the product of the sign you would get if the class was correctly or incorrectly identified).
+
+<br><br>Now, we are interested in \(\theta, b\) s.t. the margin \(M\) (the perpendicular distance between the decision boundary amd the closest of the data points) is maximized.
+<br>Again, as previously discussed, for any data point \(x_i\),
 \[x_i = x_i{_\perp} + M ||\theta||\]
 \[\implies (\theta^T x_i + b) = (\theta^T x_i{_\perp} + b) + M ||\theta|| \]
 \[\implies M ||\theta|| = \theta^T x_i + b \]
 \[\implies f(x_i) = c \frac{\theta^T\theta}{||\theta||} = c \frac{||\theta||^2}{||\theta||} = c ||\theta ||\]
 \[\implies c = \frac{ \theta^T x_i + b }{||\theta||} = \frac{y(x_i)}{||\theta||} \]
-Since we are only interested in correctly classified data points, i.e. \( t_n y(x_n) > 0 \forall n \implies M_i = \frac{t_i y(x_i)}{||\theta||}\). The goal of SVM is to find that hyperplane that has the maximum margin \(M\) from the closest points, i.e. we maximize the minimum distance, i.e. a mini-max problem: 
+Since we are only interested in correctly classified data points, i.e. \( t_i y(x_i) > 0 \forall i \in 1,2,...,n \implies M_i = \frac{t_i y(x_i)}{||\theta||}\). The goal of SVM is to find that hyperplane that has the maximum margin \(M\) from the closest points, i.e. we maximize the minimum distance, i.e. a mini-max problem: 
 \[ \underset{\theta, b}{\operatorname{max}} \bigg( \underset{i}{\operatorname{min}} \frac{t_i y(x_i)}{||\theta||} \bigg) \textrm{ s.t. } t_i y(x_i) > 0\]
 We can simplify this problem by recognizing that we must fix the norm \(||\theta|| = 1\) to pick one of the infinite solutions. We can instead fix the product \(M||\theta|| = 1 \) such that,
 \[ M = \frac{t_i y(x_i)}{||\theta||} \implies M||\theta|| = t_i y(x_i) = 1 \]
@@ -187,4 +186,3 @@ or
 \[ \underset{\theta, b}{\operatorname{min}} ||\theta||^2 \textrm{ s.t. } t_i y(x_i) \ge 1 \forall i \in 1,2,...,n\]
 This can be solved as a constrained optimization problem using the Lagrangian formulation.
 </p> 
-
