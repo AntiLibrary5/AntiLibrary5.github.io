@@ -3,134 +3,92 @@ layout: default
 title: Vaibhav Arora, theboxtroll
 ---
 <h1>Jupyter Notebook on Google Cloud Platform</h1>
-
-<p align="justify">
-CPU:
-<br>E2-standard
-<br>2 vCPU, 4GB Memory 0.041$ hourly, 29.86$ per month
-<br>4 vCPU, 16GB Memory 0.162$ hourly, 117.99$ per month
-<br>16 vCPU, 64 GB Memory, .645 hourly, 470.51$ per month
-<br>
-<br>E2-highmem
-<br>2 vCPU, 16GB Memory 0.109$ hourly, 79.74$ per month
-<br>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month
-<br>
-<br>E2-highcpu
-<br>4 vCPU, 4GB Memory 0.119$ hourly, 87.23$ per month
-<br>8 vCPU, 8GB Memory 0.238$ hourly, 137.99$ per month
-<br>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month
-<br>
-<br>Persistent Storage linked to server:
-<br>8$ for 200 GB persistent disk per month
-<br>
-<br>Static IP:
-<br>0.01$ per hour, 7$ per month
-<br>
-<br>Cloud storage 0.26$ per GB per month 
-<br>
-<br>VM:
-- After creating VM (dont forget to give access to cloud API)
-- Goto VPC Network>set ip to Static
-- install jupyter notebook:
-	wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh
-	bash Anaconda3-4.0.0-Linux-x86_64.sh
-- use anaconda:
-	source ~/.bashrc
-- install libs:
-	pip install --upgrade pip
-	pip install tensorflow
-	pip install keras
-
--  “CREATE FIREWALL RULE” with below configuration:
-	Name: <Enter a firewall name>
-	Targets: All instances in the network
-	Source IP ranges: 0.0.0.0/0
-	Protocols and ports: Select “Specified protocols and ports” option.
-	tcp: 8888 <You can change any other port number>
-
-- check for a JN config:
-	ls ~/.jupyter/jupyter_notebook_config.py
-	else create one:
-	jupyter notebook --generate-config
-	
-- add following: c = get_config()
-	c.NotebookApp.ip = '*'
-	c.NotebookApp.open_browser = False
-	c.NotebookApp.port = <Port Number>
-	
-- jupyter-notebook --no-browser --port=<PORT-NUMBER>
-
-Bucket:
-- create and can upload
-
-gcloud sdk:
-- gcloud compute project-info describe --project PROJECT_ID
-- gcloud config set project formal-vertex-301211
-- upload to bucket:
-	gsutil cp C:/bee.jpg gs://vaibhav_instance1
-- download from bucket:
-	gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/bee2.jpg
-- copy to a folder
-	gsutil cp gs://my-awesome-bucket/kitten.png gs://my-awesome-bucket/just-a-folder/kitten3.png
-- list contents 
-	gsutil ls gs://my-awesome-bucket
-- list details of object
-	gsutil ls -l gs://my-awesome-bucket/kitten.png
-- delete object:
-	gsutil rm gs://my-awesome-bucket/kitten.png
-- count:
-	gsutil ls gs://vaibhav_instance1/images/bees | find /c /v""
-- remove the bucket:
-	gsutil rm -r gs://my-awesome-bucket
-	
-JN:
-- initialize:
-	from google.cloud import storage
-	from io import BytesIO
-
-	client = storage.Client()
-	bucket = "vaibhav_instance1"
-
-- for read:
-	blob = storage.blob.Blob("train.csv",bucket)
-	content = blob.download_as_string()
-	train = pd.read_csv(BytesIO(content))
-
-- for write:
-
-	train.to_pickle("train.pkl")
-	blob = bucket.blob('train.pkl')
-	blob.upload_from_filename('train.pkl')
-
-	or
-	train.to_csv() if you like
-	
-ALTERNATIVELY
-- connect:
-	!gcloud compute project-info describe --project formal-vertex-301211
-- download from bucket to jupyter:
-	!gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/BEE.jpg
-- upload from jupyter to bucket:
-	!gsutil cp C:/Vaibhav/BEE.jpg gs://vaibhav_instance1
-	
-script:
-import pandas as pd
-import urllib.request
-
-def url_to_jpg(i, url, file_path):
-	filename = 'image-{}.jpg'.format(i)
-	full_path = '{}{}'.format(file_path, filename)
-	urllib.request.urlretrieve(url, full_path)
-	
-	print('{} saved.'.format(filename))
-	return None
-	
-FILENAME = 'imgs_url.csv'
-FILE_PATH = 'images/'
-
-urls = pd.read_csv(FILENAME)
-
-for i, url in enumerate(urls.values):
-	url_to_jpg(im url[0], FILE_PATH)
-
-<\p>
+<p><strong>CPU:</strong></p>
+<p>E2-standard</p>
+<p>2 vCPU, 4GB Memory 0.041$ hourly, 29.86$ per month</p>
+<p>4 vCPU, 16GB Memory 0.162$ hourly, 117.99$ per month</p>
+<p>16 vCPU, 64 GB Memory, .645 hourly, 470.51$ per month</p>
+<p><br></p>
+<p>E2-highmem</p>
+<p>2 vCPU, 16GB Memory 0.109$ hourly, 79.74$ per month</p>
+<p>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month</p>
+<p><br></p>
+<p>E2-highcpu</p>
+<p>4 vCPU, 4GB Memory 0.119$ hourly, 87.23$ per month</p>
+<p>8 vCPU, 8GB Memory 0.238$ hourly, 137.99$ per month</p>
+<p>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month</p>
+<p><br></p>
+<p><strong>Persistent Storage linked to server:</strong></p>
+<p>8$ for 200 GB persistent disk per month</p>
+<p><br></p>
+<p><strong>Static IP:</strong></p>
+<p>0.01$ per hour, 7$ per month</p>
+<p><br></p>
+<p><strong>Cloud storage:</strong></p>
+<p>0.26$ per GB per month&nbsp;</p>
+<p><br></p>
+<p><strong>Setting up the VM:</strong></p>
+<p><strong>- c</strong>reate a new VM instance with desired configuration (make sure to <span style='color: rgb(0, 0, 0); font-family: "Times New Roman"; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;'>give access to cloud API)</span> )</p>
+<p>- go to VPC Network -&gt; set IP from Ephemeral to Static</p>
+<p>- start the VM: right-click -&gt; start and you will have access to bash</p>
+<p>- install jupyter notebook:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>bash Anaconda3-4.0.0-Linux-x86_64.sh</p>
+<p>- use anaconda:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>source ~/.bashrc</p>
+<p>- install libs:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>pip install --upgrade pip</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>pip install tensorflow</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>pip install keras</p>
+<p><br></p>
+<p>- &nbsp;&ldquo;CREATE FIREWALL RULE&rdquo; with below configuration:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>Name: &lt;Enter a firewall name&gt;</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>Targets: All instances in the network</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>Source IP ranges: 0.0.0.0/0</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>Protocols and ports: Select &ldquo;Specified protocols and ports&rdquo; option.</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>tcp: 8888 &lt;You can change any other port number&gt;</p>
+<p><br></p>
+<p>- check for a JN config:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>ls ~/.jupyter/jupyter_notebook_config.py</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>else create one:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>jupyter notebook --generate-config</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span></p>
+<p>- add following to the config file:&nbsp;</p>
+<p>&nbsp; &nbsp; c = get_config()</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>c.NotebookApp.ip = &apos;*&apos;</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>c.NotebookApp.open_browser = False</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>c.NotebookApp.port = &lt;Port Number&gt;</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span></p>
+<p>- run: jupyter-notebook --no-browser --port=&lt;PORT-NUMBER&gt;</p>
+<p><br></p>
+<p><strong>Cloud bucket:</strong></p>
+<p>- create a bucket with desired configuration</p>
+<p><br></p>
+<p>- install gcloud sdk and then:</p>
+<p>&nbsp; &nbsp; gcloud compute project-info describe --project PROJECT_ID</p>
+<p>&nbsp; &nbsp; gcloud config set project formal-vertex-301211</p>
+<p>- upload to bucket:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil cp C:/bee.jpg gs://vaibhav_instance1</p>
+<p>- download from bucket:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/bee2.jpg</p>
+<p>- copy to a folder</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil cp gs://my-awesome-bucket/kitten.png gs://my-awesome-bucket/just-a-folder/kitten3.png</p>
+<p>- list contents&nbsp;</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil ls gs://my-awesome-bucket</p>
+<p>- list details of object</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil ls -l gs://my-awesome-bucket/kitten.png</p>
+<p>- delete object:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil rm gs://my-awesome-bucket/kitten.png</p>
+<p>- count:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil ls gs://vaibhav_instance1/images/bees | find /c /v&quot;&quot;</p>
+<p>- remove the bucket:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>gsutil rm -r gs://my-awesome-bucket</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span></p>
+<p><strong>Jupyter Notebook:</strong></p>
+<p>- connect:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>!gcloud compute project-info describe --project &lt;project-name e.g <span style='color: rgb(0, 0, 0); font-family: "Times New Roman"; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;'>formal-vertex-301211</span> &gt;</p>
+<p>- download from bucket to jupyter:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>!gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/BEE.jpg</p>
+<p>- upload from jupyter to bucket:</p>
+<p><span style="white-space:pre;">&nbsp; &nbsp;&nbsp;</span>!gsutil cp C:/Vaibhav/BEE.jpg gs://vaibhav_instance1</p>
+<p><br></p>
