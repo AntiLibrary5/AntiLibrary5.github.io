@@ -1,0 +1,136 @@
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>Jupyter Notebook on Google Cloud Platform</h1>
+
+<p align="justify">
+CPU:
+<br>E2-standard
+<br>2 vCPU, 4GB Memory 0.041$ hourly, 29.86$ per month
+<br>4 vCPU, 16GB Memory 0.162$ hourly, 117.99$ per month
+<br>16 vCPU, 64 GB Memory, .645 hourly, 470.51$ per month
+<br>
+<br>E2-highmem
+<br>2 vCPU, 16GB Memory 0.109$ hourly, 79.74$ per month
+<br>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month
+<br>
+<br>E2-highcpu
+<br>4 vCPU, 4GB Memory 0.119$ hourly, 87.23$ per month
+<br>8 vCPU, 8GB Memory 0.238$ hourly, 137.99$ per month
+<br>8 vCPU, 64 GB Memory, .435 hourly, 317.5$ per month
+<br>
+<br>Persistent Storage linked to server:
+<br>8$ for 200 GB persistent disk per month
+<br>
+<br>Static IP:
+<br>0.01$ per hour, 7$ per month
+<br>
+<br>Cloud storage 0.26$ per GB per month 
+<br>
+<br>VM:
+- After creating VM (dont forget to give access to cloud API)
+- Goto VPC Network>set ip to Static
+- install jupyter notebook:
+	wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh
+	bash Anaconda3-4.0.0-Linux-x86_64.sh
+- use anaconda:
+	source ~/.bashrc
+- install libs:
+	pip install --upgrade pip
+	pip install tensorflow
+	pip install keras
+
+-  “CREATE FIREWALL RULE” with below configuration:
+	Name: <Enter a firewall name>
+	Targets: All instances in the network
+	Source IP ranges: 0.0.0.0/0
+	Protocols and ports: Select “Specified protocols and ports” option.
+	tcp: 8888 <You can change any other port number>
+
+- check for a JN config:
+	ls ~/.jupyter/jupyter_notebook_config.py
+	else create one:
+	jupyter notebook --generate-config
+	
+- add following: c = get_config()
+	c.NotebookApp.ip = '*'
+	c.NotebookApp.open_browser = False
+	c.NotebookApp.port = <Port Number>
+	
+- jupyter-notebook --no-browser --port=<PORT-NUMBER>
+
+Bucket:
+- create and can upload
+
+gcloud sdk:
+- gcloud compute project-info describe --project PROJECT_ID
+- gcloud config set project formal-vertex-301211
+- upload to bucket:
+	gsutil cp C:/bee.jpg gs://vaibhav_instance1
+- download from bucket:
+	gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/bee2.jpg
+- copy to a folder
+	gsutil cp gs://my-awesome-bucket/kitten.png gs://my-awesome-bucket/just-a-folder/kitten3.png
+- list contents 
+	gsutil ls gs://my-awesome-bucket
+- list details of object
+	gsutil ls -l gs://my-awesome-bucket/kitten.png
+- delete object:
+	gsutil rm gs://my-awesome-bucket/kitten.png
+- count:
+	gsutil ls gs://vaibhav_instance1/images/bees | find /c /v""
+- remove the bucket:
+	gsutil rm -r gs://my-awesome-bucket
+	
+JN:
+- initialize:
+	from google.cloud import storage
+	from io import BytesIO
+
+	client = storage.Client()
+	bucket = "vaibhav_instance1"
+
+- for read:
+	blob = storage.blob.Blob("train.csv",bucket)
+	content = blob.download_as_string()
+	train = pd.read_csv(BytesIO(content))
+
+- for write:
+
+	train.to_pickle("train.pkl")
+	blob = bucket.blob('train.pkl')
+	blob.upload_from_filename('train.pkl')
+
+	or
+	train.to_csv() if you like
+	
+ALTERNATIVELY
+- connect:
+	!gcloud compute project-info describe --project formal-vertex-301211
+- download from bucket to jupyter:
+	!gsutil cp gs://vaibhav_instance1/bee2.jpg C:/Vaibhav/BEE.jpg
+- upload from jupyter to bucket:
+	!gsutil cp C:/Vaibhav/BEE.jpg gs://vaibhav_instance1
+	
+script:
+import pandas as pd
+import urllib.request
+
+def url_to_jpg(i, url, file_path):
+	filename = 'image-{}.jpg'.format(i)
+	full_path = '{}{}'.format(file_path, filename)
+	urllib.request.urlretrieve(url, full_path)
+	
+	print('{} saved.'.format(filename))
+	return None
+	
+FILENAME = 'imgs_url.csv'
+FILE_PATH = 'images/'
+
+urls = pd.read_csv(FILENAME)
+
+for i, url in enumerate(urls.values):
+	url_to_jpg(im url[0], FILE_PATH)
+
+<\p>
