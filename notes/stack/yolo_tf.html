@@ -1,0 +1,16 @@
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>YOLOv4 with Tensorflow</h1>
+<p align="justify">
+Tested with TF 2.4.0 (pre-req TF 2.3.0 from repo):
+- Clone repo: https://github.com/hunglc007/tensorflow-yolov4-tflite
+-  Convert darknet weights to tensorflow:
+		python save_model.py --weights ./data/yolov4.weights --output ./checkpoints/yolov4-416 --input_size 416 --model yolov4 
+		python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
+		
+- Run in tensorflow
+		python detect.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --image ./data/kite.jpg
+		python detect.py --weights ./checkpoints/yolov4-tiny-416 --size 416 --model yolov4 --image ./data/multi.jpg --tiny
+ <\p>
