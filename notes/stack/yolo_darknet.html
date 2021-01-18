@@ -1,0 +1,41 @@
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>YOLOv3 in Windows with Darknet</h1>
+
+<p align="justify">
+Tested with: Win10, CMake 3.16.0 rc-3, MS Visual Studio 2019
+- Clone the Darknet repo from (better suited for Windows build, for Linux, can use the main repo of 'pjreddie'): https://github.com/AlexeyAB/darknet 
+- Get 'YOLOv3-320' weights and save in the root folder darknet/: https://pjreddie.com/darknet/yolo/ 
+- To compile:
+	In the Windows:
+		- Open Cmake (gui) 
+		- Refer the steps in https://hsto.org/webt/pz/s1/uu/pzs1uu4heb7vflfcjqn-lxy-aqu.jpeg
+			- Enter input path to the darknet Source, and output path to the Binaries (same root folder for both darknet/ 
+			- Configure (button) -> Optional platform for generator: x64 -> Finish 
+			- Deselect dependencies OpenCV, cudDNN, etx. if don't have already
+			- Generate -> Open Project (opens MS Visual Studio)
+		- In MS Visual Studio: 
+			- Change Debug -> Release
+			- Select: x64 
+			- Build -> Build solution 
+
+- To run:
+	- Open cmd in root folder darknet/
+	- Run: darknet.exe detect cfg/yolov3.cfg yolov3.weights data/dog.jpg
+	- If error 'internal command not found', run: Release/darknet.exe detect cfg/yolov3.cfg yolov3.weights data/dog.jpg
+	- If the same error, make sure the complete path is added to Environment Variables -> Path
+	- If error plthreadV2.exe not found:
+		- Copy darklib.dll and uselib.exe from darknet/Release folder to the darknet/ root folder
+		- Copy pthreadGC2.dll and pthreadVC2.dll from darknet\3rdparty\pthreads\bin\ folder to the darknet/ root folder
+	- Finally from root folder, run: darknet.exe detect cfg/yolov3.cfg yolov3.weights data/dog.jpg
+	- Output saved in predictions.jpg in root folder
+- To run from Python:
+	#!/usr/bin/env python
+	from subprocess import call
+
+	dir = r"C:\Vaibhav\AI_ParisSaclay\TER\CARLA\WindowsNoEditor\darknet\darknet-master\darknet-master"
+	cmdline = "darknet.exe detect cfg/yolov4-tiny.cfg yolov4-tiny.weights data/multi.jpg"
+	rc = call(cmdline, cwd=dir) # run `cmdline` in `dir`
+<\p>
