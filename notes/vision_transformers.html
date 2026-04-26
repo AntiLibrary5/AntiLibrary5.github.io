@@ -9,24 +9,21 @@ title: Vaibhav Arora, theboxtroll
   <meta name="viewport" content="width=device-width">
   <title>MathJax example</title>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async
-          src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
   </script>
 </head>
 
 <p align="justify">
-<br>
-*Written for a PhD-level physics/optics audience. Covers patch embedding, positional encoding,
-self-attention with full Q/K/V derivation, layer normalization, the encoder block, and the
-pivot from classification to segmentation. A concrete tensor shape trace runs throughout.*
-<br>
-<br>
+  <br>
+  I figure the best way to understand Vision Transformers is to trace the "concrete" tensor shape that runs throughout.
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Setup and Notation</b>
-<br>
-<br>
+  <b>Setup and Notation</b>
+  <br>
+  <br>
 <table border="1" style="border-collapse: collapse; width: 100%;">
   <tr>
     <td style="padding: 8px;">Symbol</td>
@@ -75,294 +72,296 @@ pivot from classification to segmentation. A concrete tensor shape trace runs th
 </p>
 
 <p align="justify">
-<b>Step 1 — Patch Extraction</b>
-<br>
-<br>
-The image \(I \in \mathbb{R}^{224 \times 224 \times 3}\) is divided into a grid of non-overlapping
-\(16 \times 16\) patches. Each patch is flattened into a vector:
-<br>
-\[\mathbf{x}_i \in \mathbb{R}^{P^2 \cdot C} = \mathbb{R}^{768} \qquad i = 1, \dots, 196\]
-<br>
-Stacked into a matrix:
-<br>
-\[X_{\text{patches}} \in \mathbb{R}^{196 \times 768}\]
-<br>
-<b>Shape: \([196,\ 768]\)</b>
-<br>
-<br>
+  <b>Step 1 — Patch Extraction</b>
+  <br>
+  <br>
+  The image \(I \in \mathbb{R}^{224 \times 224 \times 3}\) is divided into a grid of non-overlapping
+  \(16 \times 16\) patches. Each patch is flattened into a vector:
+  <br>
+  \[\mathbf{x}_i \in \mathbb{R}^{P^2 \cdot C} = \mathbb{R}^{768} \qquad i = 1, \dots, 196\]
+  <br>
+  Stacked into a matrix:
+  <br>
+  \[X_{\text{patches}} \in \mathbb{R}^{196 \times 768}\]
+  <br>
+  <b>Shape: \([196,\ 768]\)</b>
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 2 — Linear Patch Embedding</b>
-<br>
-<br>
-Raw pixel vectors live in a space whose axes are individual pixel intensities. This is a poor
-space for reasoning — there is no semantic structure along those axes. The embedding projects
-each patch into a learned space \(\mathbb{R}^D\) where geometrically meaningful relationships
-can emerge.
-<br>
-\[Z_{\text{patches}} = X_{\text{patches}}\, W_E + \mathbf{b}_E \qquad W_E \in \mathbb{R}^{768 \times 768},\ \mathbf{b}_E \in \mathbb{R}^{768}\]
-<br>
-The analogy for a physicist: choosing the right basis for a Hamiltonian. Working in the pixel
-basis is like staying in the position basis when the energy eigenbasis reveals all the structure.
-\(W_E\) is learned — the training process finds the projection.
-<br>
-<b>Shape: \([196,\ 768]\)</b>
-<br>
-<br>
+  <b>Step 2 — Linear Patch Embedding</b>
+  <br>
+  <br>
+  Raw pixel vectors live in a space whose axes are individual pixel intensities. This is a poor
+  space for reasoning — there is no semantic structure along those axes. The embedding projects
+  each patch into a learned space \(\mathbb{R}^D\) where geometrically meaningful relationships
+  can emerge.
+  <br>
+  \[Z_{\text{patches}} = X_{\text{patches}}\, W_E + \mathbf{b}_E \qquad W_E \in \mathbb{R}^{768 \times 768},\
+  \mathbf{b}_E \in \mathbb{R}^{768}\]
+  <br>
+  The analogy for a physicist: choosing the right basis for a Hamiltonian. Working in the pixel
+  basis is like staying in the position basis when the energy eigenbasis reveals all the structure.
+  \(W_E\) is learned — the training process finds the projection.
+  <br>
+  <b>Shape: \([196,\ 768]\)</b>
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 3 — CLS Token</b>
-<br>
-<br>
-A single learnable vector \(\mathbf{z}_{\text{cls}} \in \mathbb{R}^{768}\) is prepended to the
-sequence. It carries no pixel information — it is a trained parameter, initialized randomly and
-updated by backpropagation. By the end of the encoder, it will have aggregated global context
-from all other tokens through attention. For classification, it is the only token used.
-<br>
-\[Z = \left[\mathbf{z}_{\text{cls}}\ ;\ Z_{\text{patches}}\right] \in \mathbb{R}^{197 \times 768}\]
-<br>
-<b>Shape: \([197,\ 768]\)</b>
-<br>
-<br>
+  <b>Step 3 — CLS Token</b>
+  <br>
+  <br>
+  A single learnable vector \(\mathbf{z}_{\text{cls}} \in \mathbb{R}^{768}\) is prepended to the
+  sequence. It carries no pixel information — it is a trained parameter, initialized randomly and
+  updated by backpropagation. By the end of the encoder, it will have aggregated global context
+  from all other tokens through attention. For classification, it is the only token used.
+  <br>
+  \[Z = \left[\mathbf{z}_{\text{cls}}\ ;\ Z_{\text{patches}}\right] \in \mathbb{R}^{197 \times 768}\]
+  <br>
+  <b>Shape: \([197,\ 768]\)</b>
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 4 — Positional Encoding</b>
-<br>
-<br>
-The attention operation (defined in Step 6) is <b>permutation-invariant</b>: shuffling the rows of
-\(Z\) produces the same result. Spatial position must therefore be injected explicitly. A learned
-matrix \(P_{\text{pos}} \in \mathbb{R}^{197 \times 768}\) is added element-wise:
-<br>
-\[Z \leftarrow Z + P_{\text{pos}}\]
-<br>
-One position vector per token, each a learned \(D\)-dimensional parameter. After this step every
-token carries both <i>what it looks like</i> and <i>where it is</i>.
-<br>
-<b>Shape: \([197,\ 768]\)</b> — unchanged
-<br>
-<br>
+  <b>Step 4 — Positional Encoding</b>
+  <br>
+  <br>
+  The attention operation (defined in Step 6) is <b>permutation-invariant</b>: shuffling the rows of
+  \(Z\) produces the same result. Spatial position must therefore be injected explicitly. A learned
+  matrix \(P_{\text{pos}} \in \mathbb{R}^{197 \times 768}\) is added element-wise:
+  <br>
+  \[Z \leftarrow Z + P_{\text{pos}}\]
+  <br>
+  One position vector per token, each a learned \(D\)-dimensional parameter. After this step every
+  token carries both <i>what it looks like</i> and <i>where it is</i>.
+  <br>
+  <b>Shape: \([197,\ 768]\)</b> — unchanged
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 5 — Layer Normalization</b>
-<br>
-<br>
-Before attention, each token vector is independently normalized across its \(D\) feature dimensions:
-<br>
-\[\text{LN}(\mathbf{x}) = \gamma \odot \frac{\mathbf{x} - \mu}{\sigma + \epsilon} + \beta\]
-<br>
-where \(\mu\) and \(\sigma\) are the scalar mean and standard deviation of \(\mathbf{x} \in \mathbb{R}^D\),
-and \(\gamma, \beta \in \mathbb{R}^D\) are learned scale and shift parameters.
-<br>
-Applied row-wise: each of the 197 vectors is normalized independently. Without this, as weights
-update during training the distribution of activations shifts unpredictably, causing dot products
-\(\mathbf{q} \cdot \mathbf{k}^\top\) to grow in an uncontrolled way. The learned \(\gamma, \beta\)
-ensure the normalization does not discard representational capacity — the network can undo the
-normalization if needed.
-<br>
-\[\tilde{Z} = \text{LN}(Z)\]
-<br>
-<b>Shape: \([197,\ 768]\)</b> — unchanged
-<br>
-<br>
+  <b>Step 5 — Layer Normalization</b>
+  <br>
+  <br>
+  Before attention, each token vector is independently normalized across its \(D\) feature dimensions:
+  <br>
+  \[\text{LN}(\mathbf{x}) = \gamma \odot \frac{\mathbf{x} - \mu}{\sigma + \epsilon} + \beta\]
+  <br>
+  where \(\mu\) and \(\sigma\) are the scalar mean and standard deviation of \(\mathbf{x} \in \mathbb{R}^D\),
+  and \(\gamma, \beta \in \mathbb{R}^D\) are learned scale and shift parameters.
+  <br>
+  Applied row-wise: each of the 197 vectors is normalized independently. Without this, as weights
+  update during training the distribution of activations shifts unpredictably, causing dot products
+  \(\mathbf{q} \cdot \mathbf{k}^\top\) to grow in an uncontrolled way. The learned \(\gamma, \beta\)
+  ensure the normalization does not discard representational capacity — the network can undo the
+  normalization if needed.
+  <br>
+  \[\tilde{Z} = \text{LN}(Z)\]
+  <br>
+  <b>Shape: \([197,\ 768]\)</b> — unchanged
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 6 — Self-Attention</b>
-<br>
-<br>
-<br><i>Motivation</i><br>
-<br>
-A convolution at layer \(l\) sees only a \(k \times k\) neighborhood. Relating a patch in the
-top-left corner to one in the bottom-right requires \(O(\text{image\_size}/k)\) stacked layers —
-long-range dependencies are expensive and lossy.
-<br>
-Attention asks a different question: given a set of \(N\) vectors, how should each vector update
-itself by aggregating information from all others, weighted by relevance? For defect detection,
-the relevance of a patch often depends on context far away — a scratch is only meaningful given
-knowledge of the surrounding material.
-<br>
-<br><i>6a — Projecting into Q, K, V</i><br>
-<br>
-Three learned matrices \(W_Q, W_K, W_V \in \mathbb{R}^{768 \times 64}\) project each token into
-three separate 64-dimensional subspaces:
-<br>
-\[Q = \tilde{Z}\, W_Q, \qquad K = \tilde{Z}\, W_K, \qquad V = \tilde{Z}\, W_V\]
-<br>
-\[\mathbb{R}^{197 \times 768} \times \mathbb{R}^{768 \times 64} \rightarrow \mathbb{R}^{197 \times 64} \quad \text{each}\]
-<br>
-All three come from the same \(\tilde{Z}\). This is <i>self</i>-attention — each token simultaneously
-plays three roles. The three projection matrices are learned independently, each specializing
-for a different role:
-<br>
-<li>\(W_Q\) — <i>what am I looking for?</i>
-<li>\(W_K\) — <i>what do I offer as a match?</i>
-<li>\(W_V\) — <i>what do I contribute if selected?</i>
-<br>
-<b>Why not just use the raw embedding \(\tilde{Z}\) directly?</b>
-<br>
-You could. \(\text{softmax}(\tilde{Z}\tilde{Z}^\top / \sqrt{768}) \cdot \tilde{Z}\) is a valid
-operation, and if the embedding is good, similar patches will have high dot products and attend
-to each other. This works. The projections are a generalization of this that removes two
-specific constraints:
-<br>
-<b>Constraint 1 — Symmetry.</b> With a single shared matrix \(W\), the attention matrix
-\(ZWW^\top Z^\top\) is always symmetric: token \(i\) attends to \(j\) exactly as much as \(j\) attends
-to \(i\). With separate \(W_Q \neq W_K\), attention is asymmetric. In a defect scenario: a
-background patch may need to look at a defect patch to update its context representation, but
-the defect patch does not need to reciprocate.
-<br>
-<b>Constraint 2 — Coupling of comparison and content.</b> With a single \(W\), the subspace used
-to <i>compare</i> tokens (to decide who attends to whom) is the same subspace used to determine
-<i>what information flows</i> when a token is attended to. With separate \(W_Q, W_K\) for comparison
-and \(W_V\) for content, the model can learn to route attention by one criterion (is this a
-defect?) while passing forward a different set of features (the defect's edge orientation,
-contrast against substrate, etc.).
-<br>
-The raw embedding space is optimized for <i>carrying information</i>, not for <i>computing similarity</i>.
-The projection into \(\mathbb{R}^{64}\) carves out a dedicated comparison subspace. This is the
-same logic as going from pixel space to embedding space — each projection finds a basis suited
-to its purpose.
-<br>
-<b>Shape of Q, K, V: \([197,\ 64]\)</b>
-<br>
-<br><i>6b — Attention Scores</i><br>
-<br>
-\[A = \frac{Q K^\top}{\sqrt{d_k}} = \frac{Q K^\top}{8}\]
-<br>
-\[\mathbb{R}^{197 \times 64} \times \mathbb{R}^{64 \times 197} \rightarrow \mathbb{R}^{197 \times 197}\]
-<br>
-Entry \(A_{ij}\) is the raw compatibility between token \(i\)'s query and token \(j\)'s key.
-<br>
-The \(\sqrt{d_k}\) scaling is variance stabilization. Each dot product is a sum of \(d_k = 64\)
-terms each with \(\sim O(1)\) variance, so without scaling the variance grows as \(d_k\). Large
-magnitudes push softmax toward a one-hot distribution — near-zero gradients, unstable training.
-Dividing by \(\sqrt{d_k}\) normalizes variance back to \(O(1)\).
-<br>
-<b>Shape: \([197,\ 197]\)</b>
-<br>
-<br><i>6c — Softmax</i><br>
-<br>
-\[\hat{A}_{ij} = \frac{e^{A_{ij}}}{\sum_{k=1}^{197} e^{A_{ik}}}\]
-<br>
-Row-wise: each row sums to 1. Row \(i\) is a probability distribution over all 197 tokens —
-how much token \(i\) attends to every other token. This matrix is directly visualizable as an
-attention map.
-<br>
-<b>Shape: \([197,\ 197]\)</b>
-<br>
-<br><i>6d — Weighted Aggregation</i><br>
-<br>
-\[\text{SA}(\tilde{Z}) = \hat{A}\, V\]
-<br>
-\[\mathbb{R}^{197 \times 197} \times \mathbb{R}^{197 \times 64} \rightarrow \mathbb{R}^{197 \times 64}\]
-<br>
-Row \(i\) of the output is a weighted sum of all value vectors. Each token has now aggregated
-information from the entire sequence, weighted by learned relevance.
-<br>
-<b>Shape: \([197,\ 64]\)</b>
-<br>
-<br><i>6e — Output Projection</i><br>
-<br>
-Project back to dimension \(D\) with \(W_O \in \mathbb{R}^{64 \times 768}\):
-<br>
-\[\text{MSA}(\tilde{Z}) = \text{SA}(\tilde{Z})\, W_O\]
-<br>
-<b>Shape: \([197,\ 768]\)</b>
-<br>
-<br>
+  <b>Step 6 — Self-Attention</b>
+  <br>
+  <br>
+  <br><i>Motivation</i><br>
+  <br>
+  A convolution at layer \(l\) sees only a \(k \times k\) neighborhood. Relating a patch in the
+  top-left corner to one in the bottom-right requires \(O(\text{image\_size}/k)\) stacked layers —
+  long-range dependencies are expensive and lossy.
+  <br>
+  Attention asks a different question: given a set of \(N\) vectors, how should each vector update
+  itself by aggregating information from all others, weighted by relevance? For defect detection,
+  the relevance of a patch often depends on context far away — a scratch is only meaningful given
+  knowledge of the surrounding material.
+  <br>
+  <br><i>6a — Projecting into Q, K, V</i><br>
+  <br>
+  Three learned matrices \(W_Q, W_K, W_V \in \mathbb{R}^{768 \times 64}\) project each token into
+  three separate 64-dimensional subspaces:
+  <br>
+  \[Q = \tilde{Z}\, W_Q, \qquad K = \tilde{Z}\, W_K, \qquad V = \tilde{Z}\, W_V\]
+  <br>
+  \[\mathbb{R}^{197 \times 768} \times \mathbb{R}^{768 \times 64} \rightarrow \mathbb{R}^{197 \times 64} \quad
+  \text{each}\]
+  <br>
+  All three come from the same \(\tilde{Z}\). This is <i>self</i>-attention — each token simultaneously
+  plays three roles. The three projection matrices are learned independently, each specializing
+  for a different role:
+  <br>
+  <li>\(W_Q\) — <i>what am I looking for?</i>
+  <li>\(W_K\) — <i>what do I offer as a match?</i>
+  <li>\(W_V\) — <i>what do I contribute if selected?</i>
+    <br>
+    <b>Why not just use the raw embedding \(\tilde{Z}\) directly?</b>
+    <br>
+    You could. \(\text{softmax}(\tilde{Z}\tilde{Z}^\top / \sqrt{768}) \cdot \tilde{Z}\) is a valid
+    operation, and if the embedding is good, similar patches will have high dot products and attend
+    to each other. This works. The projections are a generalization of this that removes two
+    specific constraints:
+    <br>
+    <b>Constraint 1 — Symmetry.</b> With a single shared matrix \(W\), the attention matrix
+    \(ZWW^\top Z^\top\) is always symmetric: token \(i\) attends to \(j\) exactly as much as \(j\) attends
+    to \(i\). With separate \(W_Q \neq W_K\), attention is asymmetric. In a defect scenario: a
+    background patch may need to look at a defect patch to update its context representation, but
+    the defect patch does not need to reciprocate.
+    <br>
+    <b>Constraint 2 — Coupling of comparison and content.</b> With a single \(W\), the subspace used
+    to <i>compare</i> tokens (to decide who attends to whom) is the same subspace used to determine
+    <i>what information flows</i> when a token is attended to. With separate \(W_Q, W_K\) for comparison
+    and \(W_V\) for content, the model can learn to route attention by one criterion (is this a
+    defect?) while passing forward a different set of features (the defect's edge orientation,
+    contrast against substrate, etc.).
+    <br>
+    The raw embedding space is optimized for <i>carrying information</i>, not for <i>computing similarity</i>.
+    The projection into \(\mathbb{R}^{64}\) carves out a dedicated comparison subspace. This is the
+    same logic as going from pixel space to embedding space — each projection finds a basis suited
+    to its purpose.
+    <br>
+    <b>Shape of Q, K, V: \([197,\ 64]\)</b>
+    <br>
+    <br><i>6b — Attention Scores</i><br>
+    <br>
+    \[A = \frac{Q K^\top}{\sqrt{d_k}} = \frac{Q K^\top}{8}\]
+    <br>
+    \[\mathbb{R}^{197 \times 64} \times \mathbb{R}^{64 \times 197} \rightarrow \mathbb{R}^{197 \times 197}\]
+    <br>
+    Entry \(A_{ij}\) is the raw compatibility between token \(i\)'s query and token \(j\)'s key.
+    <br>
+    The \(\sqrt{d_k}\) scaling is variance stabilization. Each dot product is a sum of \(d_k = 64\)
+    terms each with \(\sim O(1)\) variance, so without scaling the variance grows as \(d_k\). Large
+    magnitudes push softmax toward a one-hot distribution — near-zero gradients, unstable training.
+    Dividing by \(\sqrt{d_k}\) normalizes variance back to \(O(1)\).
+    <br>
+    <b>Shape: \([197,\ 197]\)</b>
+    <br>
+    <br><i>6c — Softmax</i><br>
+    <br>
+    \[\hat{A}_{ij} = \frac{e^{A_{ij}}}{\sum_{k=1}^{197} e^{A_{ik}}}\]
+    <br>
+    Row-wise: each row sums to 1. Row \(i\) is a probability distribution over all 197 tokens —
+    how much token \(i\) attends to every other token. This matrix is directly visualizable as an
+    attention map.
+    <br>
+    <b>Shape: \([197,\ 197]\)</b>
+    <br>
+    <br><i>6d — Weighted Aggregation</i><br>
+    <br>
+    \[\text{SA}(\tilde{Z}) = \hat{A}\, V\]
+    <br>
+    \[\mathbb{R}^{197 \times 197} \times \mathbb{R}^{197 \times 64} \rightarrow \mathbb{R}^{197 \times 64}\]
+    <br>
+    Row \(i\) of the output is a weighted sum of all value vectors. Each token has now aggregated
+    information from the entire sequence, weighted by learned relevance.
+    <br>
+    <b>Shape: \([197,\ 64]\)</b>
+    <br>
+    <br><i>6e — Output Projection</i><br>
+    <br>
+    Project back to dimension \(D\) with \(W_O \in \mathbb{R}^{64 \times 768}\):
+    <br>
+    \[\text{MSA}(\tilde{Z}) = \text{SA}(\tilde{Z})\, W_O\]
+    <br>
+    <b>Shape: \([197,\ 768]\)</b>
+    <br>
+    <br>
 </p>
 
 <p align="justify">
-<b>Step 7 — Residual Connection (post-attention)</b>
-<br>
-<br>
-\[Z \leftarrow Z + \text{MSA}(\text{LN}(Z))\]
-<br>
-\[\mathbb{R}^{197 \times 768} + \mathbb{R}^{197 \times 768} \rightarrow \mathbb{R}^{197 \times 768}\]
-<br>
-The residual adds the original \(Z\) back to the attention output. Two purposes: (1) a gradient
-highway — gradients flow directly through the addition without passing through the attention
-computation; (2) the attention block only needs to learn a <i>correction</i> to the identity, which
-is an easier optimization target than learning the full transformation from scratch.
-<br>
-<b>Shape: \([197,\ 768]\)</b>
-<br>
-<br>
+  <b>Step 7 — Residual Connection (post-attention)</b>
+  <br>
+  <br>
+  \[Z \leftarrow Z + \text{MSA}(\text{LN}(Z))\]
+  <br>
+  \[\mathbb{R}^{197 \times 768} + \mathbb{R}^{197 \times 768} \rightarrow \mathbb{R}^{197 \times 768}\]
+  <br>
+  The residual adds the original \(Z\) back to the attention output. Two purposes: (1) a gradient
+  highway — gradients flow directly through the addition without passing through the attention
+  computation; (2) the attention block only needs to learn a <i>correction</i> to the identity, which
+  is an easier optimization target than learning the full transformation from scratch.
+  <br>
+  <b>Shape: \([197,\ 768]\)</b>
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 8 — Layer Normalization + MLP Block</b>
-<br>
-<br>
-A second LayerNorm followed by a position-wise two-layer MLP applied independently to each token:
-<br>
-\[\text{MLP}(\mathbf{x}) = \text{GELU}(\mathbf{x}\, W_1 + \mathbf{b}_1)\, W_2 + \mathbf{b}_2\]
-<br>
-\[W_1 \in \mathbb{R}^{768 \times 3072}, \quad W_2 \in \mathbb{R}^{3072 \times 768}\]
-<br>
-Per token: \(\mathbb{R}^{768} \rightarrow \mathbb{R}^{3072} \rightarrow \mathbb{R}^{768}\). Applied to
-all 197 tokens simultaneously. Followed by a second residual:
-<br>
-\[Z \leftarrow Z + \text{MLP}(\text{LN}(Z))\]
-<br>
-Attention mixes information <i>across</i> tokens. The MLP processes each token <i>independently</i> after
-that mixing. The two operations are complementary — global routing followed by local refinement.
-<br>
-<b>Shape: \([197,\ 768]\)</b> — unchanged throughout
-<br>
-<br>
+  <b>Step 8 — Layer Normalization + MLP Block</b>
+  <br>
+  <br>
+  A second LayerNorm followed by a position-wise two-layer MLP applied independently to each token:
+  <br>
+  \[\text{MLP}(\mathbf{x}) = \text{GELU}(\mathbf{x}\, W_1 + \mathbf{b}_1)\, W_2 + \mathbf{b}_2\]
+  <br>
+  \[W_1 \in \mathbb{R}^{768 \times 3072}, \quad W_2 \in \mathbb{R}^{3072 \times 768}\]
+  <br>
+  Per token: \(\mathbb{R}^{768} \rightarrow \mathbb{R}^{3072} \rightarrow \mathbb{R}^{768}\). Applied to
+  all 197 tokens simultaneously. Followed by a second residual:
+  <br>
+  \[Z \leftarrow Z + \text{MLP}(\text{LN}(Z))\]
+  <br>
+  Attention mixes information <i>across</i> tokens. The MLP processes each token <i>independently</i> after
+  that mixing. The two operations are complementary — global routing followed by local refinement.
+  <br>
+  <b>Shape: \([197,\ 768]\)</b> — unchanged throughout
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 9 — Classification Head</b>
-<br>
-<br>
-Extract the CLS token (row 0) and apply a linear classifier:
-<br>
-\[\hat{\mathbf{y}} = Z[0,\ :]\, W_{\text{cls}} \qquad W_{\text{cls}} \in \mathbb{R}^{768 \times K}\]
-<br>
-<b>Shape: \([768] \rightarrow [K]\)</b>
-<br>
-<br>
+  <b>Step 9 — Classification Head</b>
+  <br>
+  <br>
+  Extract the CLS token (row 0) and apply a linear classifier:
+  <br>
+  \[\hat{\mathbf{y}} = Z[0,\ :]\, W_{\text{cls}} \qquad W_{\text{cls}} \in \mathbb{R}^{768 \times K}\]
+  <br>
+  <b>Shape: \([768] \rightarrow [K]\)</b>
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Step 10 — Segmentation Pivot</b>
-<br>
-<br>
-Classification uses the CLS token — one label per image, spatial information discarded.
-Segmentation requires one label per pixel — spatial information must be preserved.
-<br>
-Discard the CLS token. Keep all patch tokens:
-<br>
-\[Z_{\text{patches}} = Z[1:,\ :] \in \mathbb{R}^{196 \times 768}\]
-<br>
-Reshape to a spatial grid:
-<br>
-\[\mathbb{R}^{196 \times 768} \rightarrow \mathbb{R}^{14 \times 14 \times 768}\]
-<br>
-This is a spatial feature map — structurally equivalent to a CNN backbone output, but every
-location has been computed with global context. A lightweight decoder upsamples to pixel
-resolution:
-<br>
-\[\mathbb{R}^{14 \times 14 \times 768} \rightarrow \mathbb{R}^{224 \times 224 \times K}\]
-<br>
-<b>For the masked encoder variant:</b> masking during pretraining forces the model to reconstruct
-missing patches from context. The learned representations therefore encode *what is contextually
-normal* for a given location. Defect patches are those whose representations deviate from what
-the model predicts — the anomaly signal is baked into the representation space itself.
-<br>
-<br>
+  <b>Step 10 — Segmentation Pivot</b>
+  <br>
+  <br>
+  Classification uses the CLS token — one label per image, spatial information discarded.
+  Segmentation requires one label per pixel — spatial information must be preserved.
+  <br>
+  Discard the CLS token. Keep all patch tokens:
+  <br>
+  \[Z_{\text{patches}} = Z[1:,\ :] \in \mathbb{R}^{196 \times 768}\]
+  <br>
+  Reshape to a spatial grid:
+  <br>
+  \[\mathbb{R}^{196 \times 768} \rightarrow \mathbb{R}^{14 \times 14 \times 768}\]
+  <br>
+  This is a spatial feature map — structurally equivalent to a CNN backbone output, but every
+  location has been computed with global context. A lightweight decoder upsamples to pixel
+  resolution:
+  <br>
+  \[\mathbb{R}^{14 \times 14 \times 768} \rightarrow \mathbb{R}^{224 \times 224 \times K}\]
+  <br>
+  <b>For the masked encoder variant:</b> masking during pretraining forces the model to reconstruct
+  missing patches from context. The learned representations therefore encode *what is contextually
+  normal* for a given location. Defect patches are those whose representations deviate from what
+  the model predicts — the anomaly signal is baked into the representation space itself.
+  <br>
+  <br>
 </p>
 
 <p align="justify">
-<b>Complete Shape Trace</b>
-<br>
-<br>
+  <b>Complete Shape Trace</b>
+  <br>
+  <br>
 <table border="1" style="border-collapse: collapse; width: 100%;">
   <tr>
     <td style="padding: 8px;">Step</td>
