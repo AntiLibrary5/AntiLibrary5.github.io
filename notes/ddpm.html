@@ -1,0 +1,400 @@
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>DDPM</h1>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\(', '\)']]
+    }
+  };
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  </script>
+</head>
+
+<p align="justify">
+  A <b>succinct</b> summary of DDPM:
+  <br>
+  <br>
+<table border="1" style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <td style="padding: 8px;">Process</td>
+    <td style="padding: 8px;">Direction</td>
+    <td style="padding: 8px;">State</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Forward</b></td>
+    <td style="padding: 8px;">Data $\rightarrow$ <b>Fixed</b></td>
+    <td style="padding: 8px;">Pure noise</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Reverse</b></td>
+    <td style="padding: 8px;">Pure <b>noise</b> $\rightarrow$ Learned NN</td>
+    <td style="padding: 8px;">Data</td>
+  </tr>
+</table>
+<br>
+</p>
+
+
+<p align="justify">
+  The forward process:
+  <br>
+  Defines a Markov chain that progressively adds Gaussian noise.
+  <br>
+  \[q(x_{t}|x_{t-1}) = \mathcal{N}(x_{t}; \sqrt{1-\beta_{t}}x_{t-1}, \beta_{t}I); q(x_{1:T}|x_{0}) = \prod_{t=1}^{T}q(x_{t}|x_{t-1})\]
+  <br>
+  <li>Where $t$ runs from <b>1 to</b> $T$ timesteps (~1000).</li>
+  $\beta$ is the noise <b>variance</b> at <b>step</b> $t$ chosen from a schedule.
+  <br>
+  $x_{0}$ is original clean data point.
+  <br>
+  $x_{T}$ is a pure <b>Gaussian</b> noise.
+  <br>
+  <li>At each step, the signal is slightly attenuated by $\sqrt{1-\beta_{t}}$.</li>
+  <b>A</b> Gaussian noise $\sqrt{\beta_{t}}$ is injected.
+  <br>
+  Additionally, we define (reparameterization trick) <b>and</b> a small amount of <b>noise</b>:
+  <br>
+  $\alpha_{t} = \mathbf{1} - \beta_{\mathbf{t}}$
+  <br>
+  $\bar{\alpha}_{t} = \prod_{j=1}^{t} \alpha_{j}$
+  <br>
+  <li>Where $\bar{\alpha}_{t}$ tells us how much of the original signal survives after $t$ steps of noising.</li>
+  $\mu = \sqrt{1-\beta_{t}}x_{t-1}$ <b>and</b> $\sigma^{2} = \beta_{t}$.
+  <br>
+  Given a standard <b>Gaussian</b> $\sim \mathcal{N}(0, I)$ gives $\mathcal{N}(\mu, \sigma^{2})$.
+  <br>
+  \[x_{t} = \sqrt{1-\beta_{t}}x_{t-1} + \sqrt{\beta_{t}}\epsilon_{t-1}, \epsilon_{t-1} \sim \mathcal{N}(0, I)\]
+  <br>
+  A <b>deterministic version</b> which can be backpropagated through (compared to $q(x_{t}|x_{t-1})$ which is a stochastic distribution—we can't backpropagate through random sampling).
+  <br>
+  Given:
+  <br>
+  \[x_{t} = \sqrt{\alpha_{t}}x_{t-1} + \sqrt{1-\alpha_{t}}\epsilon_{t-1}\]
+  <br>
+  \[x_{t-1} = \sqrt{\alpha_{t-1}}x_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon_{t-2}\]
+  <br>
+  Substituting:
+  <br>
+  \[x_{t} = \sqrt{\alpha_{t}}(\sqrt{\alpha_{t-1}}x_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon_{t-2}) + \sqrt{1-\alpha_{t}}\epsilon_{t-1}\]
+  <br>
+  The <b>Last</b> 2 <b>terms</b> in <b>$x_t$</b>
+  <br>
+  <li>Their sum is also <b>Gaussian</b>.</li>
+  <b>They</b> are Gaussians $\mathcal{N}(0, \sigma_1^2 I) + \mathcal{N}(0, \sigma_2^2 I)$.
+  <br>
+  $\alpha_1 \epsilon_1 + \alpha_2 \epsilon_2 \sim \mathcal{N}(0, (\sigma_1^2 + \sigma_2^2)I)$.
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>Combined Variance Derivation</b>
+  <br>
+  Using <b>our terms</b>:
+  <br>
+  $\sigma_1^2 = \alpha_t(1 - \alpha_{t-1})$
+  <br>
+  <b>Combined variance</b>:
+  <br>
+  \[\sigma_1^2 + \sigma_2^2 = \alpha_t(1 - \alpha_{t-1}) + (1 - \alpha_t)\]
+  <br>
+  \[= \alpha_t - \alpha_t \alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t \alpha_{t-1}\]
+  <br>
+  The merged noise is:
+  <br>
+  \[\sqrt{\alpha_t(1 - \alpha_{t-1})} \epsilon_{t-1} + \sqrt{1 - \alpha_t} \epsilon_{t-1} = \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\epsilon}_{t-1}\]
+  <br>
+  where $\bar{\epsilon}_{t-1} \sim \mathcal{N}(0, I)$.
+  <br>
+  \[x_t = \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\epsilon}_{t-1}\]
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><b>Closed Form Expression</b></b>
+  <br>
+  <br>
+  Recall that <b>$x_t$</b> in terms of <b>$x_{t-1}$</b>:
+  <br>
+  \[x_t = \sqrt{\alpha_t} x_{t-1} + \sqrt{1 - \alpha_t} \epsilon\]
+  <br>
+  We just saw that in <b>terms</b> of <b>$x_{t-2}$</b>:
+  <br>
+  \[x_t = \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\epsilon}_{t-1}\]
+  <br>
+  <b>We</b> can continue unrolling; we will arrive at:
+  <br>
+  \[x_t = \sqrt{\alpha_t \alpha_{t-1} \dots \alpha_1} x_0 + \sqrt{1 - \alpha_t \alpha_{t-1} \dots \alpha_1} \epsilon\]
+  <br>
+  Since $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$:
+  <br>
+  \[x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon\]
+  <br>
+  where $\epsilon \sim \mathcal{N}(0, I)$.
+  <br>
+  This <b>closed</b> form expression lets us <b>jump</b> to any timestep <b>without</b> simulating the intermediate time steps in <b>(1)</b>.
+  <br>
+  <b>Code Implementation</b>
+  <br>
+<pre><code>def q_sample(self, x0, t, noise=None):
+    sqrt_ab = self.gather(self.sqrt_alpha_bars, t, x0.shape) # 
+    sqrt_1mab = self.gather(self.sqrt_one_minus_alpha_bars, t, x0.shape) # 
+    return sqrt_ab * x0 + sqrt_1mab * noise # 
+</code></pre>
+</p>
+
+<p align="justify">
+  <b>The Reverse Process</b>
+  <br>
+  <br>
+  We can reverse the <b>forward</b> process and sample from $q(x_{t-1}|x_{t})$. By doing so, we will be able to recreate the true sample from Gaussian input noise $x_{T} \sim \mathcal{N}(0, I)$.
+  <br>
+  However, the <b>true</b> reverse process $q(x_{t-1}|x_{t})$ is intractable—it requires knowing the full data distribution.
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>The Tractable Posterior</b>
+  <br>
+  <br>
+  As discussed before, when conditioned on $x_0$, the <b>posterior</b> is tractable:
+  <br>
+  \[q(x_{t-1}|x_{t}, x_{0}) = \mathbf{\mathcal{N}}(x_{t-1}; \tilde{\mu}(x_{t}, x_{0}), \tilde{\beta}_{t}I)\]
+  <br>
+  Using Bayes' Rule:
+  <br>
+  \[q(x_{t-1}|x_{t}, x_{0}) = \frac{q(x_{t}|x_{t-1}, x_{0}) q(x_{t-1}|x_{0})}{q(x_{t}|x_{0})}\]
+  <br>
+  Expanding the Gaussian densities:
+  <br>
+  \[\mathbf{q} \propto \exp \left[ -\frac{1}{2} \left( \frac{x_{t}^2 - 2\sqrt{\alpha_{t}}x_{t}x_{t-1} + \alpha_{t}x_{t-1}^2}{\beta_{t}} + \frac{x_{t-1}^2 - 2\sqrt{\bar{\alpha}_{t-1}}x_{t-1}x_{0} + \bar{\alpha}_{t-1}x_{0}^2}{1 - \bar{\alpha}_{t-1}} - \frac{(x_{t} - \sqrt{\bar{\alpha}_{t}}x_{0})^2}{1 - \bar{\alpha}_{t}} \right) \right]\]
+  <br>
+  Grouped by $x_{t-1}$:
+  <br>
+  \[= \exp \left[ -\frac{1}{2} \left( \left\{ \frac{\alpha_{t}}{\beta_{t}} + \frac{1}{1 - \bar{\alpha}_{t-1}} \right\} x_{t-1}^2 - 2 \left( \frac{\sqrt{\alpha_{t}}}{\beta_{t}}x_{t} + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_{t-1}}x_{0} \right) x_{t-1} + C(x_{t}, x_{0}) \right) \right]\]
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>Identifying Mean and Variance</b>
+  <br>
+  <br>
+  Given the standard Gaussian definition $N(x) = \exp \left[ -\frac{1}{2\sigma^2}(x - \mu)^2 \right]$:
+  <br>
+  <li>This matches the form $-\frac{A}{2}x^2 + Bx - C$.</li>
+  <li>Where $A = \frac{1}{\sigma^2} \implies \sigma^2 = \frac{1}{A}$.</li>
+  <li>The mean is $\mu = B \sigma^2 = \frac{B}{A}$.</li>
+  <br>
+  <b><i><b>Solving for Variance ($\tilde{\beta}_{t}$):</b></i></b>
+  <br>
+  <br>
+  \[\tilde{\beta}_{t} = 1 / \left( \frac{\alpha_{t}}{\beta_{t}} + \frac{1}{1 - \bar{\alpha}_{t-1}} \right)\]
+  <br>
+  \[= 1 / \left( \frac{\alpha_{t}(1 - \bar{\alpha}_{t-1}) + \beta_{t}}{\beta_{t}(1 - \bar{\alpha}_{t-1})} \right)\]
+  <br>
+  \[\tilde{\beta}_{t} = \frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_{t}} \beta_{t}\]
+  <br>
+<pre><code># From self.posterior_var implementation
+self.posterior_var = self.betas * (1.0 - alpha_bars_prev) / (1.0 - alpha_bars)
+</code></pre>
+  <blockquote><p><b>Note:</b> This is the theoretically correct variance for the reverse process when $x_0$ is known. In inference, the model approximates $x_0$ via noise prediction, serving as a fixed lower bound.</p></blockquote>
+</p>
+
+<p align="justify">
+  <b><b>Derivation of the Posterior Mean ($\tilde{\mu}$)</b></b>
+  <br>
+  <br>
+  Similarly, since $\mu = \frac{B}{A}$:
+  <br>
+  \[\tilde{\mu}_{t}(x_{t}, x_{0}) := \frac{\left( \frac{\sqrt{\alpha_{t}}}{\beta_{t}}x_{t} + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_{t-1}}x_{0} \right)}{\left( \frac{\alpha_{t}}{\beta_{t}} + \frac{1}{1 - \bar{\alpha}_{t-1}} \right)}\]
+  <br>
+  \[= \left( \frac{\sqrt{\alpha_{t}}}{\beta_{t}}x_{t} + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_{t-1}}x_{0} \right) \left( \frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_{t}} \cdot \beta_{t} \right)\]
+  <br>
+  \[= \frac{\sqrt{\alpha_{t}}(1 - \bar{\alpha}_{t-1})}{1 - \bar{\alpha}_{t}}x_{t} + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_{t}}{1 - \bar{\alpha}_{t}}x_{0}\]
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><b>Parameterization via Noise Prediction</b></b>
+  <br>
+  <br>
+  Recall the forward process <b>$x_t$</b> in terms of $x_0$:
+  <br>
+  \[x_{t} = \sqrt{\bar{\alpha}_{t}}x_{0} + \sqrt{1 - \bar{\alpha}_{t}}\epsilon_{t}, \quad \epsilon \sim \mathcal{N}(0, I)\]
+  <br>
+  Solving for $x_{0}$:
+  <br>
+  \[x_{0} = \frac{1}{\sqrt{\bar{\alpha}_{t}}}(x_{t} - \sqrt{1 - \bar{\alpha}_{t}}\epsilon_{t})\]
+  <br>
+  Ho et al. showed it is better to parameterize the model to predict noise $\epsilon_{\theta}$ rather than $x_{0}$. Substituting the expression for $x_{0}$ into the posterior mean:
+  <br>
+  \[\tilde{\mu}_{t}(x_{t}, \mathbf{x_{0}}) = \frac{\sqrt{\alpha_{t}}(1 - \bar{\alpha}_{t-1})}{1 - \bar{\alpha}_{t}}x_{t} + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_{t}}{1 - \bar{\alpha}_{t}} \left( \frac{1}{\sqrt{\bar{\alpha}_{t}}}(x_{t} - \sqrt{1 - \bar{\alpha}_{t}}\epsilon_{\theta}) \right)\]
+  <br>
+  This simplifies to the parameterized mean:
+  <br>
+  \[\tilde{\mu}_{\theta}(x_{t}, t) = \frac{1}{\sqrt{\alpha_{t}}} \left( x_{t} - \frac{1 - \alpha_{t}}{\sqrt{1 - \bar{\alpha}_{t}}} \epsilon_{\theta}(x_{t}, t) \right)\]
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><b>Implementation and Sampling</b></b>
+  <br>
+  <br>
+  The model predicts the noise $\epsilon_{\theta}$ which is <b>available</b> at train time.
+  <br>
+<pre><code>def compute_mu_theta(self, xt, t_scalar):
+    # eps_theta is parameterized by model
+    eps_theta = self.model(xt, t_scalar) 
+    
+    mu_theta = (1.0 / torch.sqrt(alpha_t)) * (xt - (beta_t / torch.sqrt(1.0 - alpha_bar_t)) * eps_theta) 
+    return mu_theta, eps_theta 
+</code></pre>
+  To get <b>$x_{t-1}$</b> from <b>$x_t$</b>:
+  <br>
+  \[x_{t-1} \sim \mathcal{N} \left( x_{t-1}; \frac{1}{\sqrt{\alpha_{t}}} \left( x_{t} - \frac{1 - \alpha_{t}}{\sqrt{1 - \bar{\alpha}_{t}}} \epsilon_{\theta}(x_{t}, t) \right), \Sigma_{\theta}(x_{t}, t) \right)\]
+  <br>
+  We can sample from the above distribution:
+  <br>
+  \[x_{t-1} = \frac{1}{\sqrt{\alpha_{t}}} \left( x_{t} - \frac{1 - \alpha_{t}}{\sqrt{1 - \bar{\alpha}_{t}}} \epsilon_{\theta}(x_{t}, t) \right) + \sigma_{t}z\]
+  <br>
+  Where $z \sim \mathcal{N}(0, I)$.
+  <br>
+<pre><code>def p_sample(self, xt, t_scalar):
+    mu_theta, eps_theta = self.compute_mu_theta(xt, t_scalar) 
+    
+    # Sample noise z
+    z = torch.randn_like(xt) if t_scalar > 0 else torch.zeros_like(xt) 
+    
+    x_prev = mu_theta + torch.sqrt(posterior_vars) * z 
+    return x_prev, mu_theta, eps_theta 
+
+def sample(self, n_samples=2000):
+    x = torch.randn(n_samples, 2) 
+    for t in reversed(range(T)): 
+        x, mu_theta, eps_theta = self.p_sample(x, t) 
+    return x 
+</code></pre>
+</p>
+
+<p align="justify">
+  <b>Loss Term</b>
+  <br>
+  <br>
+  Recall our <b>tractable</b> surrogate in <b>equation</b> given conditioning , as equivalence in marginal and conditional KL minimization holds:
+  <br>
+  \[\mathbb{E}_{q(x_0)} \mathbb{E}_{q(x_{1:T}|x_0)} [D_{KL}(q(x_{t-1}|x_t, x_0) || p_{\theta}(x_{t-1}|x_t))] + C\]
+  <br>
+  Since both $p_{\theta}(x_{t-1}, x_t)$ and $q(x_{t-1}|x_t, x_0)$ are Gaussians <b>with the same variance</b> , minimizing their KL divergence reduces to simply matching their means:
+  <br>
+  \[L_t = \mathbb{E}_{x_0, \epsilon, t} \left[ \frac{1}{2 ||\Sigma_\theta||_t^2} ||\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t)||^2 \right]\]
+  <br>
+  From <b>an earlier derivation</b>:
+  <br>
+  \[L_t = \mathbb{E}_{x_0, \epsilon, t} \left[ \frac{1}{2 ||\Sigma_\theta||_t^2} \left|\left| \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_t \right) - \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t) \right) \right|\right|^2 \right]\]
+  <br>
+  \[= \mathbb{E}_{x_0, \epsilon, t} \left[ \frac{(1-\alpha_t)^2}{2\alpha_t(1-\bar{\alpha}_t)||\Sigma_\theta||_t^2} ||\epsilon_t - \epsilon_\theta(x_t, t)||^2 \right]\]
+  <br>
+  Ho et al. found that training works better by <b>ignoring</b> the weighting term:
+  <br>
+  \[L_t^{simple} = \mathbb{E}_{t \sim [1, T], x_0, \epsilon_t} [||\epsilon_t - \epsilon_\theta(x_t, t)||^2]\]
+  <br>
+  <b>Parameterized</b> by <b>a</b> neural <b>net</b>:
+  <br>
+  \[L_t = \mathbb{E}_{t \sim [1, T], x_0, \epsilon_t} [||\epsilon_t - \epsilon_\theta(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon_t, t)||^2]\]
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>Code Implementation</b>
+  <br>
+  <br>
+<pre><code>def training_loss(self, x0):
+    # Sample random timestep
+    t = torch.randint(0, self.schedule.T, (x0.shape[0], 1)) 
+    
+    # Sample noise
+    eps = torch.randn_like(x0) 
+    
+    # Corrupt x0 to xt
+    xt = self.schedule.q_sample(x0, t, eps) 
+    
+    # Predict the noise
+    eps_pred = self.model(xt, t) 
+    
+    loss = F.mse_loss(eps_pred, eps) 
+    return loss 
+</code></pre>
+  Algorithms
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  Training
+  <br>
+  <b>repeat</b>
+  <br>
+  $x_{0} \sim q(x_{0})$
+  <br>
+  $t \sim \text{Uniform}(\{1, \dots, T\})$
+  <br>
+  $\epsilon \sim \mathcal{N}(0, I)$
+  <br>
+  <li>Take gradient <b>descent</b> step on:</li>
+  \[\nabla_{\mathbf{\theta}} || \epsilon - \epsilon_{\mathbf{\theta}}(\sqrt{\bar{\alpha}_{t}}x_{0} + \sqrt{1 - \bar{\alpha}_{t}}\epsilon, t) ||^{2}\]
+  <br>
+  <b>until converged</b>
+  <br>
+</p>
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  Sampling
+  <br>
+  $x_{T} \sim \mathcal{N}(0, I)$
+  <br>
+  <b>for</b> $t = T, \dots, 1$ <b>do</b>
+  <br>
+  $z \sim \mathcal{N}(0, I)$ if $t > 1$, <b>else</b> $z = 0$
+  <br>
+  \[x_{t-1} = \frac{1}{\sqrt{\alpha_{t}}} \left( x_{t} - \frac{1 - \alpha_{t}}{\sqrt{1 - \bar{\alpha}_{t}}} \epsilon_{\theta}(x_{t}, t) \right) + \mathbf{\sigma}_{t}z\]
+  <br>
+  <b>end for</b>
+  <br>
+  <b>return</b> $x_{0}$
+  <br>
+</p>
