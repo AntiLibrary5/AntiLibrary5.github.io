@@ -22,24 +22,22 @@ title: Vaibhav Arora, theboxtroll
 
 
 <p align="justify">
-  Deep Generative Modeling
   <br>
-  Goal of DGM:
+  <b>Note:</b> Following is a compact summary from my own notes I took while reading Diffusion Models: A Comprehensive Survey of Methods and Applications <a href="https://arxiv.org/abs/2209.00796">https://arxiv.org/abs/2209.00796</a>
+  <br>
+  <br>
+  <b>Goal of DGM - Deep Generative Modeling:</b>
   <br>
   $p_{\phi^{*}}(x) \approx p_{data}(x)$
   <br>
-  Capability of DGM:
-  <br>
-  <b>Training of DGM</b>
-  <br>
-  <li>Generate new data points <b>using</b> sampling methods like Monte <b>Carlo</b> Sampling</li>
+  i.e. approximate a target data distribution and generate new data points using sampling methods like Monte Carlo Sampling.
 </p>
 <br>
 <hr>
 <br>
 
 <p align="justify">
-  Training of DGM
+  <b>Training of DGM:</b>
   <br>
   $\phi^{*} \in \arg \min_{\Phi} D(p_{data}, p_{\Phi})$
   <br>
@@ -47,11 +45,11 @@ title: Vaibhav Arora, theboxtroll
   <br>
   \[D_{KL}(p_{data} || p_{\phi}) := \int p_{data}(x) \log \frac{p_{data}(x)}{p_{\phi}(x)} dx\]
   <br>
-  <b>Equivalence to minimization</b>:
+  Equivalence to minimization:
   <br>
   \[= -E_{x \sim p_{data}} [\log p_{\phi}(x)] + \mathcal{H}(p_{data})\]
   <br>
-  <li>Where $\mathcal{H}(p_{data})$ is the <b>entropy of</b> the <b>data distribution</b>.</li>
+  Where $\mathcal{H}(p_{data})$ is the entropy of the data distribution.
   <b>Minimizing KL $\Leftrightarrow$ Maximizing MLE</b>
   <br>
   \[\min_{\Phi} D_{KL}(p_{data} || p_{\Phi}) \Leftrightarrow \max_{\Phi} E_{x \sim p_{data}} [\log p_{\phi}(x)]\]
@@ -66,13 +64,14 @@ title: Vaibhav Arora, theboxtroll
 <br>
 
 <p align="justify">
-  Challenges in Modeling Distribution:
+  <b>Challenges in Modeling Distribution:</b>
   <br>
-  For $p_{\phi}$ to be a <b>valid</b> probability <b>density function</b>, it must satisfy:
+  For $p_{\phi}$ to be a valid probability density function, it must satisfy:
   <br>
-  <b>Non-negativity</b>: $p_{\phi}(x) \ge 0, \forall x$ in the domain
+  1. <b>Non-negativity</b>: $p_{\phi}(x) \ge 0, \forall x$ in the domain
   <br>
-  <b>Normalization</b>: Integral <b>over the</b> entire domain must <b>equal</b> one, i.e., $\int p(x) dx = 1$
+  2. <b>Normalization</b>: Integral over the entire domain must equal one, i.e., $\int p(x) dx = 1$
+  <br>
   <br>
   Ensuring Non-Negativity:
   <br>
@@ -82,7 +81,7 @@ title: Vaibhav Arora, theboxtroll
   <br>
   Enforcing Normalization:
   <br>
-  To create a valid probability density, we must <b>divide</b> the function $\tilde{p}_{\phi}(x)$ by its integral over <b>the</b> entire space:
+  To create a valid probability density, we must divide the function $\tilde{p}_{\phi}(x)$ by its integral over the entire space:
   <br>
   \[p_{\phi}(x) = \frac{\tilde{p}_{\phi}(x)}{\int \tilde{p}_{\phi}(x') dx'} = \frac{\exp(E_{\phi}(x))}{\int \exp(E_{\phi}(x')) dx'}\]
   <br>
@@ -90,9 +89,9 @@ title: Vaibhav Arora, theboxtroll
   <br>
   \[\int \exp(E_{\phi}(x')) dx' = Z(\phi)\]
   <br>
-  $Z(\phi)$ is the <b>normalizing constant</b>.
+  $Z(\phi)$ is the <b>normalizing constant. This integral is often <b>intractable</b></b>.
   <br>
-  <li>This integral is often <b>intractable</b>.</li>
+
 </p>
 <br>
 <hr>
@@ -113,121 +112,121 @@ title: Vaibhav Arora, theboxtroll
   <li>Deep AR models factorize the joint data distribution $p_{data}$ into a product of conditional probabilities using the chain rule of probability:</li>
   \[p_{data}(x) = \prod_{i=1}^{D} p_{\phi}(x_i | x_{&lt;i})\]
   <br>
-  <li>Each conditional is parameterized by a neural network (e.g., Transformer) and is normalized by design (e.g., softmax).</li>
-  <li>Thus, global normalization is trivial.</li>
+  <li>Each conditional is parameterized by a neural network e.g., Transformer and is normalized by design e.g., softmax. Thus, global normalization is trivial.</li>
   <li>Training is done by minimizing negative log-likelihood.</li>
   <li>While they achieve strong density estimation, their sequential nature restricts sampling speed, and fixed ordering is restrictive.</li>
 </p>
 
 <p align="justify">
-  <b>Variational Autoencoders (VAE)</b>
+  <b>Variational Autoencoders - VAE</b>
   <br>
   <br>
   <li>VAEs extend classical autoencoders by introducing latent variables $z$ that capture hidden structure in data via a probabilistic view.</li>
   <li>They learn both an encoder, $q_{\theta}(z|x)$, which approximates the unknown distribution of latent variables given the data, and a decoder $p_{\phi}(x|z)$ which reconstructs data from these latent variables.</li>
-  <li>Training is done by maximizing a tractable surrogate to the true log-likelihood called <b>ELBO</b> (Evidence Lower Bound):</li>
+  <li>Training is done by maximizing a tractable surrogate to the true log-likelihood called <b>ELBO</b> - Evidence Lower Bound:</li>
   \[\mathcal{L}_{ELBO}(\theta, \phi; x) = E_{q_{\theta}(z|x)}[\log p_{\phi}(x|z)] - D_{KL}(q_{\theta}(z|x) || p_{prior}(z))\]
   <br>
   <li>The $p_{prior}(z)$ is typically Gaussian.</li>
-  <li>Face challenges like sample sharpness and the tendency of the encoder to ignore latent variables.</li>
+  <li>Challenges like sample sharpness and the tendency of the encoder to ignore latent variables.</li>
 </p>
 
 <p align="justify">
-  <b>Energy-Based Models (EBM)</b>
+  <b>Energy-Based Models - EBM</b>
   <br>
   <br>
   <li>Define a probability distribution through an energy function $E_{\phi}(x)$ that assigns lower energy to more probable data points.</li>
   \[p_{\phi}(x) := \frac{1}{Z(\phi)} \exp(-E_{\phi}(x)) \text{ where } Z(\phi) = \int \exp(-E_{\phi}(x)) dx\]
-  <br>
-  $Z(\phi)$ is known as the <b>partition function</b>.
-  <br>
+
   <li>Training EBMs requires maximizing the log-likelihood of data but faces challenges from the partition function.</li>
   <b>Diffusion models</b> circumvent this by generating data from the gradient of the log density, which does not depend on the normalizing constant.
   <br>
-  Normalizing <b>Flows</b>:
+</p>
+
+<p align="justify">
+  <b>Normalizing Flows</b>:
   <br>
-  <li>These aim to learn a <b>sequence of</b> <b>bijective</b> mappings <b>…</b> <b>between</b> a simple latent distribution <b>$z$</b> and a complex data distribution <b>$x$</b>.</li>
-  <b>Defined as an</b> invertible operator, these models leverage the change of <b>variables</b> formula for <b>densities</b>, enabling MLE training:
+  <li>These aim to learn a sequence of bijective mappings between a simple latent distribution <b>$z$</b> and a complex data distribution <b>$x$</b>.</li>
+  Defined as an invertible operator, these models leverage the change of variables formula for densities, enabling MLE training:
   <br>
   \[\log p_{\phi}(x) = \log p(z) + \log \left| \det \frac{\partial f_{\phi}^{-1}(x)}{\partial x} \right|\]
   <br>
-  <li>The normalization <b>constant</b> is absorbed analytically via the change of variables formula, making likelihood computation exact <b>&</b> tractable.</li>
-  <li>However, they typically <b>impose</b> restrictive architectural constraints to <b>ensure</b> <b>bijectivity</b>.</li>
+  <li>The normalization constant is absorbed analytically via the change of variables formula, making likelihood computation exact and tractable.</li>
+  <li>However, they typically impose restrictive architectural constraints to ensure <b>bijectivity</b>.</li>
 </p>
 <br>
 <hr>
 <br>
 
 <p align="justify">
-  Generative Adversarial Networks (GANs):
+  Generative Adversarial Networks - GANs:
   <br>
-  <li>GANs <b>do</b> not define an explicit density function and therefore bypass likelihood estimation entirely.</li>
-  <li>They focus on generating samples that closely <b>mimic</b> the <b>data</b> distribution <b>while</b> modeling it implicitly.</li>
-  <b>Training Objective</b>:
+  <li>GANs do not define an explicit density function and therefore bypass likelihood estimation entirely.</li>
+  <li>They focus on generating samples that closely <b>mimic</b> the data distribution while modeling it implicitly.</li>
+  Training Objective:
   <br>
   \[\min_{G} \max_{D} \left[ E_{x \sim p_{data}(x)} [\log D_{\eta}(x)] + E_{z \sim p_{prior}(z)} [\log(1 - D_{\eta}(G_{\phi}(z)))] \right]\]
   <br>
-  <li>Although capable of generating high-quality data, the min-max training process is <b>notoriously</b> unstable.</li>
+  <li>Although capable of generating high-quality data, the min-max training process is notoriously unstable.</li>
 </p>
 <br>
 <hr>
 <br>
 
 <p align="justify">
-  Summary of Generative Strategies:
+  <b>Summary of Generative Strategies:</b>
   <br>
   All these classical families of Deep Generative Models illustrate complementary strategies for modeling complex distributions. Diffusion methods inherit ideas from several of these perspectives:
   <br>
   <b>To VAEs</b>: They connect through variational training objectives.
   <br>
-  <b>To EBMs</b>: They connect through score matching that <b>learns</b> gradients of the log-density.
+  <b>To EBMs</b>: They connect through score matching that learns gradients of the log-density.
   <br>
   <b>To Normalizing Flows</b>: They connect through continuous-time transformations.
   <br>
   <br>
-  <b><i>Conceptual Lineage:</i></b>
+  <b>Conceptual Lineage:</b>
   <br>
   <br>
-  <b>VAEs</b> $\rightarrow$ Denoising Diffusion Probabilistic Models (<b>DDPMs</b>)
+  <b>VAEs</b> $\rightarrow$ Denoising Diffusion Probabilistic Models - DDPMs
   <br>
-  <b>EBMs</b> / Score Matching $\rightarrow$ <b>Noise</b> Conditional Score Networks (<b>NCSN</b>)
+  <b>EBMs</b> / <b>Score Matching</b> $\rightarrow$ Noise Conditional Score Networks - NCSN
   <br>
-  <li>Normalizing <b>Flows</b> $\rightarrow$ Flow Matching (continuous-time formulation <b>Score SDE</b>)</li>
-  VAEs
+  <b>Normalizing Flows</b> $\rightarrow$ Flow Matching - continuous-time formulation Score SDE
   <br>
-  <li>VAEs represent data w/ latent variables <b>and are</b> trained by maximizing a tractable <b>lower</b> bound on the log likelihood.</li>
-  <li>In this setting, a learned <b>both</b> encoder maps observations to latents & a learned decoder maps latents to observations, closing the modeling loop.</li>
-  <li>Hierarchical variants stack several latent layers to capture structure <b>at</b> multiple scales.</li>
-  <li>DDPMs: instead of jointly training <b>both</b> encoder <b>&</b> decoder, the encoder is fixed. <i> <b>It acts</b> as a forward <b>noising</b> process that gradually maps data to noise , and training learns a decoder that reverses this path in successive denoising steps. </i> VAEs, hierarchical VAEs, <b>&</b> DDPMs all optimize a likelihood surrogate defined by a <b>variational</b> bound.</li>
 </p>
 <br>
 <hr>
 <br>
 
 <p align="justify">
-  <b>Mathematical Foundation</b>
+  <b>VAEs to DDPMs</b>
   <br>
+  <li>VAEs represent data w/ latent variables and are trained by maximizing a tractable lower bound on the log likelihood.</li>
+  <li>In this setting, a learned encoder maps observations to latents and a learned decoder maps latents to observations, closing the modeling loop.</li>
+  <li>Hierarchical variants stack several latent layers to capture structure at multiple scales.</li>
+  <li>DDPMs: instead of jointly training both encoder and decoder, the <b>encoder is fixed</b>. The encoder acts as a forward noising process that gradually maps data to noise, and training learns a decoder that reverses this path in successive denoising steps. VAEs, hierarchical VAEs, & DDPMs all optimize a likelihood surrogate defined by a variational bound.</li>
+  <br>
+  <b>Mathematical Foundation</b>
   <br>
   In VAEs, we assume each observation $x$ is generated from a latent variable $z \sim p(z) = \mathcal{N}(0, I) \xrightarrow{\text{decoder}} p_{\phi}(x|z)$.
   <br>
-  Ideally we'd train w/ maximizing log likelihood of data (maximizing the probability the model assigns to real data):
+  Ideally we'd train w/ maximizing log likelihood of data - maximizing the probability the model assigns to real data:
   <br>
   \[\log p_{\phi}(x) = \log \int p_{\phi}(x|z) p(z) dz\]
   <br>
-  <li>The integral marginalizes out $z$ (it asks "<b>summing over</b> every possible latent that could have produced $x$, how probable is <b>it</b> overall?").</li>
-  <li>But this integral is intractable.</li>
-  <br>
-  <b><i>Approximating the Integral</i></b>
+  The integral marginalizes out $z$ - it asks "summing over every possible latent that could have produced $x$, how probable is it overall?". But this integral is intractable.
   <br>
   <br>
-  So can we approximate this integral? A standard way of approximating integrals is importance sampling — instead of integrating over all $z$, sample from some distribution <b>and</b> average:
+  <b>Approximating the Integral</b>
+  <br>
+  So can we approximate this integral? A standard way of approximating integrals is importance sampling — instead of integrating over all $z$, sample from some distribution and average:
   <br>
   \[\log p_{\phi}(x) = \log \left( \mathbb{E}_{z \sim q(z)} \left[ \frac{p_{\phi}(x|z) p(z)}{q(z)} \right] \right)\]
   <br>
   <li>Ideally <b>$q(z)$</b> should concentrate on the $z$ values that are likely to have produced the particular $x$ in our data.</li>
   <li>In other words — the posterior $p_{\phi}(z|x)$.</li>
-  <li>But, $p_{\phi}(z|x) = \frac{p_{\phi}(x|z) p(z)}{p_{\phi}(x)}$ where the <b>denominator</b> is intractable for the same reason the likelihood is intractable.</li>
-  A way out of this <b>issue</b> is <b>to</b> approximate the true posterior w/ a parameterized neural network — the encoder $q_{\theta}(z|x)$ which is the variational step, and maximize the ELBO instead of likelihood (tractably).
+  <li>But, $p_{\phi}(z|x) = \frac{p_{\phi}(x|z) p(z)}{p_{\phi}(x)}$ where the denominator is intractable for the same reason the likelihood is intractable.</li>
+  A way out of this issue is to approximate the true posterior w/ a parameterized neural network — the encoder $q_{\theta}(z|x)$ which is the variational step, and maximize the ELBO instead of likelihood (tractably).
   <br>
 </p>
 
@@ -237,7 +236,7 @@ title: Vaibhav Arora, theboxtroll
   <br>
   $q_{\theta}(z|x) \approx p_{\phi}(z|x)$ $= \mathcal{N}(\mu_{\theta}(x), \sigma_{\theta}^2(x)I)$
   <br>
-  We are now in a <b>position</b> to define a computable training objective. While we cannot directly optimize $\log p_{\phi}(x)$, we can maximize a <b>lower</b> bound on <b>it</b>:
+  We are now in a position to define a computable training objective. While we cannot directly optimize $\log p_{\phi}(x)$, we can maximize a lower bound on it:
   <br>
   \[\log p_{\phi}(x) = \log \int p_{\phi}(x, z) dz\]
   <br>
@@ -245,17 +244,17 @@ title: Vaibhav Arora, theboxtroll
   <br>
   \[= \log \left( \mathbb{E}_{z \sim q_{\theta}(z|x)} \left[ \frac{p_{\phi}(x, z)}{q_{\theta}(z|x)} \right] \right)\]
   <br>
-  \[\ge \mathcal{L}_{ELBO}(\theta, \phi; x) \text{ **via** Jensen's inequality}\]
+  \[\ge \mathcal{L}_{ELBO}(\theta, \phi; x) \text{ via Jensen's inequality}\]
   <br>
-  Where the <b>ELBO</b> is defined as:
+  Where the ELBO is defined as:
   <br>
   \[\mathcal{L}_{ELBO} = \mathbb{E}_{z \sim q_{\theta}(z|x)} [\log p_{\phi}(x|z)] - D_{KL}(q_{\theta}(z|x) || p(z))\]
   <br>
-  <b>Relationship to Likelihood:</b>
+  Relationship to Likelihood:
   <br>
   \[\log p_{\phi}(x) - \mathcal{L}_{ELBO} = D_{KL}(q_{\theta}(z|x) || p_{\phi}(z|x)) \ge 0\]
   <br>
-  Thus, maximizing the ELBO pushes <b>up</b> the likelihood and improves the posterior approximation at the same time.
+  Thus, maximizing the ELBO pushes up the likelihood and improves the posterior approximation at the same time.
   <br>
 </p>
 <br>
@@ -266,7 +265,7 @@ title: Vaibhav Arora, theboxtroll
   <b>Computability of ELBO</b>
   <br>
   <br>
-  <b>And</b> $\mathcal{L}_{ELBO}$ is computable. Since <b>the</b> decoder is modeled as <b>a</b> Gaussian distribution w/ fixed variance:
+  And $\mathcal{L}_{ELBO}$ is computable. Since the decoder is modeled as a Gaussian distribution w/ fixed variance:
   <br>
   \[p_{\phi}(x|z) := \mathcal{N}(x; \mu_{\phi}(z), \sigma^2 I)\]
   <br>
@@ -288,11 +287,12 @@ title: Vaibhav Arora, theboxtroll
   <b>The Reparameterization Trick</b>
   <br>
   <br>
-  The only remaining issue is the fact that the sampling step $z \sim q_{\theta}(z|x)$ <b>random</b> sample does not allow backpropagation. Thus, we rewrite it as:
+  The only remaining issue is the fact that the sampling step $z \sim q_{\theta}(z|x)$ random sample does not allow backpropagation. Thus, we rewrite it as:
   <br>
   \[z = \mu_{\theta}(x) + \sigma_{\theta}(x) \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)\]
   <br>
   Generalizing the VAE framework, we ask: what if we stack many latent layers?
+  <br>
   <br>
   <b>Hierarchical VAE Structure:</b>
   <br>
@@ -308,17 +308,16 @@ title: Vaibhav Arora, theboxtroll
 <br>
 
 <p align="justify">
-  <b>Denoising Diffusion Probabilistic Models (DDPMs)</b>
+  <b>Denoising Diffusion Probabilistic Models - DDPMs</b>
   <br>
   <br>
   DDPMs solve the instability of hierarchical models by making the encoder fixed as a predetermined noise schedule.
   <br>
-  <b>Forward Process (Fixed Encoder):</b>
+  <b>Forward Process - Fixed Encoder:</b>
   <br>
   \[x_0 \xrightarrow{+ \text{noise}_1} x_1 \xrightarrow{+ \text{noise}_2} \dots \xrightarrow{+ \text{noise}_L} x_L \sim \mathcal{N}(0, I)\]
   <br>
-  <li>The model only learns the reverse step.</li>
-  <li>This <b>acts as</b> a <b>decoder</b> that <b>denoises</b> step by <b>step</b>.</li>
+  <li>The model only learns the reverse step - a decoder that denoises step by step.</li>
   <li>Because the encoder is fixed, there is no joint instability.</li>
   <li>Since each denoising step is a small, manageable task, the model learns reliably.</li>
   <li>Crucially, the training objective is still the same ELBO—it just decomposes into a sum of simple denoising problems at each noise level.</li>
@@ -331,20 +330,23 @@ title: Vaibhav Arora, theboxtroll
   <b>Mathematical Formulation of DDPMs</b>
   <br>
   <br>
-  In the DDPM framework, the encoder (or forward process) is fixed. We want to learn the reverse transition: given a noisy step at $i$, recover the slightly less noisy sample at step $i-1$.
+  In the DDPM framework, the encoder or forward process is fixed. We want to learn the reverse transition: given a noisy step at $i$, recover the slightly less noisy sample at step $i-1$.
+  <br>
   <br>
   <b>The Forward Transition:</b>
   <br>
-  \[p(x_i | x_{i-1}) = \mathcal{N}(x_i; \sqrt{\alpha_i} x_{i-1}, \beta_i I) \text{ where } \alpha_i = \sqrt{1 - \beta_i} \mapsto \text{**low**}\]
+  \[p(x_i | x_{i-1}) = \mathcal{N}(x_i; \sqrt{\alpha_i} x_{i-1}, \beta_i I) \text{ where } \alpha_i = \sqrt{1 - \beta_i} \mapsto \text{noising schedule}\]
   <br>
   <b>The Reverse Transition via Bayes' Theorem:</b>
   <br>
   \[p(x_{i-1} | x_i) = p(x_i | x_{i-1}) \cdot \frac{p(x_{i-1})}{p(x_i)}\]
   <br>
-  <li>Where $p(x_i) = \int p(x_i | x_0) p_{data}(x_0) dx_0$ is intractable.</li>
+  Where $p(x_i) = \int p(x_i | x_0) p_{data}(x_0) dx_0$ is intractable.
+  <br>
+  <br>
   <b>Resolving Intractability with Noise Schedules:</b>
   <br>
-  A central insight in DDPMs resolves this intractability: we condition the reverse transition (generation) on a clean data sample $x_0$.
+  A central insight in DDPMs resolves this intractability: we condition the reverse transition/generation on a clean data sample $x_0$.
   <br>
   This subtle yet powerful step transforms the intractable kernel into one that is mathematically tractable:
   <br>
@@ -352,9 +354,10 @@ title: Vaibhav Arora, theboxtroll
   <br>
   <li>All three terms on the right are now tractable because they are known Gaussians from the fixed forward process.</li>
   <li>There are no unknown integrals over $p_{data}$ anywhere.</li>
-  <b>Key Properties of the Forward Process:</b>
   <br>
-  <b>Markov Property:</b> The <b>next</b> state depends only on the current state.
+  <b>Key Properties of the Forward Process - Markov Property:</b>
+  <br>
+  The next state depends only on the current state.
   <br>
   \[p(x_i | x_{i-1}, x_0) = p(x_i | x_{i-1})\]
   <br>
@@ -364,11 +367,11 @@ title: Vaibhav Arora, theboxtroll
   <b>Gaussian Nature of the Reverse Step</b>
   <br>
   <br>
-  The product of Gaussians is Gaussian , so $p(x_{i-1}|x_i, x_0)$ has a <b>closed</b> form <b>Gaussian</b> expression with computable mean and variance :
+  The product of Gaussians is Gaussian , so $p(x_{i-1}|x_i, x_0)$ has a <b>closed</b> form Gaussian expression with computable mean and variance :
   <br>
   \[p(x_{i-1}|x_i, x_0) = \mathcal{N}(x_{i-1}; \tilde{\mu}(x_i, x_0), \tilde{\beta}_i I)\]
   <br>
-  Where the mean and variance $\tilde{\beta}_i$ are fully determined by the <b>noising</b> schedule .
+  Where the mean and variance $\tilde{\beta}_i$ are fully determined by the noising schedule .
   <br>
 </p>
 
@@ -380,11 +383,11 @@ title: Vaibhav Arora, theboxtroll
   <br>
   <b>During Inference</b>: $x_0$ is not available; it is what we are trying to generate.
   <br>
-  <li>However, the model $p_{\phi}(x_{i-1}|x_i)$ has learned to approximate the marginal reverse transition, which can be viewed as the average of the conditional posterior over all plausible clean images:</li>
+  However, the model $p_{\phi}(x_{i-1}|x_i)$ has learned to approximate the marginal reverse transition, which can be viewed as the average of the conditional posterior over all plausible clean images:
   \[p(x_{i-1}|x_i) = \mathbb{E}_{p(x_0|x_i)} [p(x_{i-1}|x_i, x_0)]\]
   <br>
-  <li>So, conditioning on $x_0$ is only needed <b>at</b> training, not for inference.</li>
-  All in all, conditioning gives us a tractable objective <b>and</b> this forms the foundation of DDPMs.
+  So, conditioning on $x_0$ is only needed at training, not for inference.
+  All in all, conditioning gives us a tractable objective and this forms the foundation of DDPMs.
   <br>
 </p>
 <br>
@@ -395,11 +398,11 @@ title: Vaibhav Arora, theboxtroll
   <b>Equivalence of KL Minimization</b>
   <br>
   <br>
-  More specifically, equivalence <b>between</b> marginal and conditional KL minimization holds:
+  More specifically, equivalence between marginal and conditional KL minimization holds:
   <br>
   \[\mathbb{E}_{p_i(x_i)} [D_{KL}(p(x_{i-1}|x_i) || p_{\phi}(x_{i-1}|x_i))] = \mathbb{E}_{p(x_0, x_i)} [D_{KL}(p(x_{i-1}|x_i, x_0) || p_{\phi}(x_{i-1}|x_i))] + C\]
   <br>
-  i.e., minimizing the KL divergence <b>between</b> marginal distributions is mathematically identical to minimizing the KL divergence <b>between</b> specific conditional distributions $p(x_{i-1}|x_i, x_0)$, which has a <b>convenient</b> closed-form expression :
+  i.e., minimizing the KL divergence between marginal distributions is mathematically identical to minimizing the KL divergence between specific conditional distributions $p(x_{i-1}|x_i, x_0)$, which has a convenient closed-form expression :
   <br>
   \[p(x_{i-1}|x_i, x_0) = \mathcal{N}(x_{i-1}; \mu(x_i, x_0, i), \sigma^2(i) I)\]
   <br>
@@ -413,11 +416,12 @@ title: Vaibhav Arora, theboxtroll
   <b>Training Objective and Loss Simplification</b>
   <br>
   <br>
-  So we only need to match the reverse process to the known conditional Gaussian to get our tractable surrogate (RHS <b>ELBO</b>):
+  So we only need to match the reverse process to the known conditional Gaussian to get our tractable surrogate (RHS):
   <br>
   \[\mathcal{L}_{ELBO} \approx \mathbb{E}_{p(x_0, x_i)} [D_{KL}(p(x_{i-1}|x_i, x_0) || p_{\phi}(x_{i-1}|x_i))] + C\]
   <br>
-  Since both $p_{\phi}(x_{i-1}, x_i)$ and $p(x_{i-1}|x_i, x_0)$ are Gaussians with <b>the</b> same variance, minimizing their KL divergence reduces to simply matching their means.
+  Since both $p_{\phi}(x_{i-1}, x_i)$ and $p(x_{i-1}|x_i, x_0)$ are Gaussians with the same variance, minimizing their KL divergence reduces to simply matching their means.
+  <br>
   <br>
   <b>Diffusion Loss Function</b>:
   <br>
@@ -442,7 +446,7 @@ title: Vaibhav Arora, theboxtroll
   <br>
   \[x_0 = \frac{x_i - \sqrt{1 - \bar{\alpha}_i} \cdot \epsilon}{\sqrt{\bar{\alpha}_i}}\]
   <br>
-  Substituting this into the closed-form expression for the target mean, the target mean can be rewritten in terms of <b>the</b> noise that was added:
+  Substituting this into the closed-form expression for the target mean, the target mean can be rewritten in terms of the noise that was added:
   <br>
   \[\tilde{\mu}(x_i, x_0, i) = \frac{1}{\sqrt{\alpha_i}} \left( x_i - \frac{1 - \alpha_i}{\sqrt{1 - \bar{\alpha}_i}} \epsilon \right)\]
   <br>
@@ -450,7 +454,7 @@ title: Vaibhav Arora, theboxtroll
   <br>
   \[\mu_{\phi}(x_i, i) = \frac{1}{\sqrt{\alpha_i}} \left( x_i - \frac{1 - \alpha_i}{\sqrt{1 - \bar{\alpha}_i}} \epsilon_{\phi}(x_i, i) \right)\]
   <br>
-  This noise prediction by the net is <b>just the</b> prediction <b>independent</b> of <b>the</b> unknown $x_0$ at inference.
+  This noise prediction by the neural net is just the noise prediction independent of the unknown $x_0$ at inference.
   <br>
 </p>
 <br>
@@ -473,13 +477,13 @@ title: Vaibhav Arora, theboxtroll
 <br>
 
 <p align="justify">
-  <b>Sampling (Generation)</b>
+  <b>Sampling/Generation</b>
   <br>
   <br>
   Generation starts from pure noise $x_T \sim \mathcal{N}(0, I)$ and iterates the learned reverse steps:
   <br>
   \[x_{i-1} = \frac{1}{\sqrt{\alpha_i}} \left( x_i - \frac{1 - \alpha_i}{\sqrt{1 - \bar{\alpha}_i}} \epsilon_{\phi}(x_i, i) \right) + \sigma_i z, \quad z \sim \mathcal{N}(0, I)\]
   <br>
-  <b>Stochastic</b> noise for <b>stochasticity</b> emerges <b>as we</b> repeat until $x_0$ becomes <b>the</b> generated sample.
+  <b>Stochasticity</b> emerges as we repeat until $x_0$ becomes the generated sample.
   <br>
 </p>
