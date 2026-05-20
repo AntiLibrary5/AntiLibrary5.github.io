@@ -1,0 +1,702 @@
+---
+layout: default
+title: Vaibhav Arora, theboxtroll
+---
+<h1>Applied Diffusion: From Toy Swiss Roll to Localized Inpainting</h1>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };</script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+  </script>
+</head>
+
+<p align="justify">
+  In the preceding notes, we covered the extensive mathematical framework behind Denoising Diffusion Probabilistic Models (DDPM). We traced the Markov chains, derived the tractable posterior, and proved why minimizing the Variational Lower Bound simplifies to a noise-prediction objective.
+  <br>
+  <br>
+  Now, we pivot from theoretical derivations to the practical engineering paradigm. We explore the journey of diffusion models through three progressive layers: the development of a <b>2D Swiss Roll Toy Model</b>, the scale-up to high-resolution latent text-to-image synthesizers like <b>Stable Diffusion (SD-XL)</b>, and finally, their adaptation into a highly-specialized industrial inspection pipeline for <b>localized defect generation and inpainting</b>.
+  <br>
+  <br>
+</p>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>1. The Toy Model: Swiss Roll 2D Diffusion</b>
+  <br>
+  <br>
+  Before tackling gigabyte-scale neural networks, we look at the mathematical engine in its simplest, most plottable form: a 2D point cloud. In this setting, the data space represents physical coordinates, allowing us to visually inspect how structure dissolves into noise and how a neural network learns to reconstruct it.
+  <br>
+  <br>
+  Rather than an arbitrary data pattern, we adopt the classic <b>Swiss Roll</b> dataset—a two-dimensional spiral distribution. This spiral provides a non-linear manifold that is challenging for standard density estimators but perfectly suited for diffusion.
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>Data Generation & Normalization</i></b>
+  <br>
+  <br>
+  The dataset consists of points along a spiral with added Gaussian noise. Crucially, before training, the coordinates are zero-mean, unit-variance normalized. Because the forward process corrupts coordinates toward standard normal noise $\mathcal{N}(0, \mathbf{I})$, any unnormalized coordinates would require recalibrating schedule hyper-parameters.
+  <br>
+</p>
+
+<pre><code>def make_swiss_roll(n_samples=10000, noise=0.1):
+    # Generate the 2D spiral coordinates
+    theta = 1.5 * np.pi * (1 + 2 * np.random.rand(n_samples))
+    r = theta
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    data = np.stack([x, y], axis=1)
+    
+    # Inject Gaussian jitter
+    data += noise * np.random.randn(*data.shape)
+    
+    # Critical step: Standardize to zero-mean and unit-variance
+    mean = data.mean(axis=0)
+    std = data.std(axis=0)
+    data_normalized = (data - mean) / std
+    return data_normalized, mean, std</code></pre>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>The Noise Schedule</i></b>
+  <br>
+  <br>
+  The noise schedule is managed by a dedicated class. In our toy model, we employ a <b>linear variance schedule</b> over $T = 100$ timesteps, starting from a tiny variance $\beta_1 = 10^{-4}$ (retaining clean data) up to a moderate variance $\beta_T = 0.02$ (completely destroying structure).
+  <br>
+  <br>
+<table border="1" style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <td style="padding: 8px;">Schedule Variable</td>
+    <td style="padding: 8px;">Mathematical Symbol</td>
+    <td style="padding: 8px;">Physical / Engineering Interpretation</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.betas</code></td>
+    <td style="padding: 8px;">$\beta_t$</td>
+    <td style="padding: 8px;">Noise variance injected at timestep $t$</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.alphas</code></td>
+    <td style="padding: 8px;">$\alpha_t = 1 - \beta_t$</td>
+    <td style="padding: 8px;">Signal retention coefficient at step $t$</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.alpha_bars</code></td>
+    <td style="padding: 8px;">$\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$</td>
+    <td style="padding: 8px;">Cumulative signal remaining from clean image $x_0$</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.sqrt_alpha_bars</code></td>
+    <td style="padding: 8px;">$\sqrt{\bar{\alpha}_t}$</td>
+    <td style="padding: 8px;">Mean scalar coefficient used in the direct forward jump</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.sqrt_one_minus_alpha_bars</code></td>
+    <td style="padding: 8px;">$\sqrt{1 - \bar{\alpha}_t}$</td>
+    <td style="padding: 8px;">Variance scalar coefficient used in the direct forward jump</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><code>self.posterior_variance</code></td>
+    <td style="padding: 8px;">$\tilde{\beta}_t$</td>
+    <td style="padding: 8px;">Theoretical variance of the tractable reverse posterior when $x_0$ is known</td>
+  </tr>
+</table>
+<br>
+  The derived posterior variance $\tilde{\beta}_t$ is calculated as:
+  \[\tilde{\beta}_t = \frac{\beta_t (1 - \bar{\alpha}_{t-1})}{1 - \bar{\alpha}_t}\]
+  During sampling, because $x_0$ is not known, the model's predicted noise is substituted into the posterior mean formula, and $\tilde{\beta}_t$ acts as a fixed lower bound for the stochastic sampling step.
+  <br>
+</p>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>The Closed-Form Forward Jump</i></b>
+  <br>
+  <br>
+  By exploiting the fact that the linear combination of independent Gaussians is itself Gaussian, we bypass step-by-step Markov simulation. We can jump directly from $x_0$ to any arbitrary timestep $t$ in one step:
+  \[x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \boldsymbol{\epsilon}, \qquad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\]
+  This is implemented in <code>q_sample</code>:
+  <br>
+</p>
+
+<pre><code>def q_sample(self, x0, t, noise=None):
+    if noise is None:
+        noise = torch.randn_like(x0)
+    sqrt_ab   = self.gather(self.sqrt_alpha_bars, t, x0.shape)
+    sqrt_1mab = self.gather(self.sqrt_one_minus_alpha_bars, t, x0.shape)
+    return sqrt_ab * x0 + sqrt_1mab * noise
+
+def gather(self, values, t, x_shape):
+    # Extracts the schedule values for the batch of timesteps and shapes it for broadcasting
+    out = values.gather(0, t)
+    return out.view(-1, *([1] * (len(x_shape) - 1)))</code></pre>
+
+<p align="justify">
+  Without this reparameterization trick, each training step would require simulating $t$ steps of Markovian noise addition. <code>q_sample</code> collapses this complexity from $\mathcal{O}(T)$ to $\mathcal{O}(1)$.
+  <br>
+</p>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>The Neural Network & Positional Time Embeddings</i></b>
+  <br>
+  <br>
+  The network must predict the injected noise \(\boldsymbol{\epsilon}\) given the noisy coordinates \(x_t\) and the current timestep \(t\). A scalar integer \(t\) is not expressive enough for deep models; we project it into a high-dimensional vector using <b>sinusoidal positional encodings</b>:
+  \[\text{emb}(t)_{2i} = \sin\left(\frac{t}{10000^{2i/d}}\right), \quad \text{emb}(t)_{2i+1} = \cos\left(\frac{t}{10000^{2i/d}}\right)\]
+  <br>
+</p>
+
+<pre><code>class SinusoidalTimeEmbedding(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, t):
+        device = t.device
+        half = self.dim // 2
+        factor = np.log(10000) / (half - 1)
+        freqs = torch.exp(torch.arange(half, device=device) * -factor)
+        args  = t.float().unsqueeze(1) * freqs.unsqueeze(0)
+        emb   = torch.cat([torch.sin(args), torch.cos(args)], dim=1)
+        return emb</code></pre>
+
+<p align="justify">
+  The model itself, <code>EpsilonMLP</code>, projects the time embedding, concatenates it with the 2D spatial coordinate \(x_t\), and processes the combined vector through a 4-layer MLP using <b>SiLU (Swish) activations</b>. Normalization layers are omitted to avoid destabilizing the learning dynamics of this highly-constrained 2D system.
+  <br>
+</p>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>Training Loss & Reverse Sampling</i></b>
+  <br>
+  <br>
+  The simplified training objective measures the Mean Squared Error (MSE) between the true noise injected in the forward jump and the network's prediction:
+  \[\mathcal{L}_{\text{simple}} = \mathbb{E}_{t, x_0, \boldsymbol{\epsilon}}\left[\left\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta\left(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon},\; t\right)\right\|^2\right]\]
+  <br>
+</p>
+
+<pre><code>def training_loss(self, x0):
+    batch_size = x0.shape[0]
+    t = torch.randint(0, self.schedule.T, (batch_size,), device=x0.device)
+    eps = torch.randn_like(x0)
+    xt = self.schedule.q_sample(x0, t, eps)
+    eps_pred = self.model(xt, t)
+    return F.mse_loss(eps_pred, eps)</code></pre>
+
+<p align="justify">
+  At inference, we begin with a sample from standard normal noise \(x_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\) and step backward from \(t = T-1 \rightarrow 0\). The reverse process uses the noise predicted by the model to approximate the posterior mean:
+  \[\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta(x_t, t)\right)\]
+  <br>
+</p>
+
+<pre><code>def p_sample(self, xt, t_scalar):
+    # Retrieve model prediction
+    eps_theta = self.model(xt, torch.tensor([t_scalar], device=xt.device))
+    
+    # Retrieve schedule constants
+    alpha_t = self.schedule.alphas[t_scalar]
+    beta_t = self.schedule.betas[t_scalar]
+    alpha_bar_t = self.schedule.alpha_bars[t_scalar]
+    post_var_t = self.schedule.posterior_variance[t_scalar]
+    
+    # Compute the posterior mean
+    mu_theta = (1.0 / torch.sqrt(alpha_t)) * (xt - (beta_t / torch.sqrt(1.0 - alpha_bar_t)) * eps_theta)
+    
+    # Add Langevin-style noise if not at the final step
+    z = torch.randn_like(xt) if t_scalar > 0 else torch.zeros_like(xt)
+    x_prev = mu_theta + torch.sqrt(post_var_t) * z
+    return x_prev
+
+def sample(self, n_samples=2000):
+    x = torch.randn(n_samples, 2, device=self.device)
+    for t in reversed(range(self.schedule.T)):
+        x = self.p_sample(x, t)
+    return x</code></pre>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>Stabilization with Exponential Moving Average (EMA)</i></b>
+  <br>
+  <br>
+  Because the reverse trajectory must be smooth across all timesteps, training is highly sensitive to parameter fluctuations. We maintain a running **EMA shadow copy** of the weights:
+  \[\theta_{\text{shadow}} \leftarrow \lambda \theta_{\text{shadow}} + (1 - \lambda) \theta_{\text{current}}\]
+  where \(\lambda = 0.995\). Swapping in these shadow weights for inference smooths out SGD noise and consistently yields higher-fidelity spiral curves.
+  <br>
+</p>
+
+<blockquote><p><b>The Three Core Equations of DDPM</b><br>All diffusion models—regardless of scale or complexity—rely on this trio of fundamental equations:<br><br>
+1. <b>Forward Jump:</b> \(x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\) (Code: <code>self.q_sample(x0, t, eps)</code>)<br>
+2. <b>Training Loss:</b> \(\mathcal{L} = \|\epsilon - \epsilon_\theta(x_t, t)\|^2\) (Code: <code>F.mse_loss(eps_pred, eps)</code>)<br>
+3. <b>Reverse Mean:</b> \(\mu_\theta = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta\right)\) (Code: <code>compute_mu_theta(xt, t_scalar)</code>)</p></blockquote>
+
+<br>
+<hr>
+<br>
+
+<!-- SECTION 2 -->
+<p align="justify">
+  <b>2. Scaling Up: From Toy to Real-World Stable Diffusion</b>
+  <br>
+  <br>
+  When we transition from a 2D Swiss Roll toy model to a massive commercial image synthesizer like <b>Stable Diffusion XL (SD-XL)</b>, the core mathematical engine remains intact. What changes is the addition of engineering layers around it to handle high-dimensional image manifolds, textual conditioning, and inference latency.
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>The Blueprint: Identical, Scaled-Up, and Genuinely New</i></b>
+  <br>
+  <br>
+  We categorize the changes according to the following framework:
+  <br>
+  <li>🟢 <b>Essentially Identical:</b> No math or logic changes; only tensor shapes grow.</li>
+  <li>🟡 <b>Scaled-Up:</b> The underlying concept is identical, but scaled up or parameterized more robustly.</li>
+  <li>🔴 <b>Genuinely New:</b> Features introduced exclusively to make high-resolution text-to-image synthesis possible.</li>
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  🟢 <b>Essentially Identical Elements</b>
+  <br>
+  <br>
+  <li><b>The Forward Process:</b> The stochastic drift-diffusion equation is identical. \(x_0\) is simply formatted as a 4-channel latent tensor rather than a 2D coordinate.</li>
+  <li><b>The Closed-Form Jump:</b> The exact same <code>q_sample</code> equation is run. HuggingFace's <code>DDPMScheduler.add_noise()</code> is functionally identical to our toy implementation.</li>
+  <li><b>Loss Objective:</b> The model is trained to minimize the simple MSE between injected and predicted noise.</li>
+  <li><b>EMA:</b> Swapping in shadow weights at inference is a standard production practice for all modern checkpoints to stabilize sampling.</li>
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>Code Comparison: The Core Denoising Loop & Forward Jump</i></b>
+  <br>
+  <br>
+  Underneath the hood, the core mathematical loops inside a production Stable Diffusion pipeline are functionally identical to our 2D toy model, only scaled to high-dimensional image tensors:
+  <br>
+</p>
+
+<b>Toy Model Implementation (Swiss Roll 2D):</b>
+<pre><code># Closed-Form Forward Jump (q_sample)
+def q_sample(self, x0, t, noise=None):
+    sqrt_ab   = self.gather(self.sqrt_alpha_bars, t, x0.shape)
+    sqrt_1mab = self.gather(self.sqrt_one_minus_alpha_bars, t, x0.shape)
+    return sqrt_ab * x0 + sqrt_1mab * noise
+
+# Sequential Reverse Sampling Loop (Inference)
+x = torch.randn(n_samples, 2)          # Start from pure Gaussian noise
+for t in reversed(range(self.schedule.T)):
+    x, mu_theta, eps_theta = self.p_sample(x, t)
+return x</code></pre>
+
+<b>HuggingFace Diffusers Equivalent (Stable Diffusion):</b>
+<pre><code># Closed-Form Forward Jump (add_noise)
+noisy_latents = scheduler.add_noise(latents, noise, timesteps)
+# Internally functions as:
+# sqrt_alpha_prod * sample + sqrt_one_minus_alpha_prod * noise
+
+# Sequential Reverse Sampling Loop (Inference)
+latents = torch.randn(B, 4, H // 8, W // 8)   # Start from pure latent Gaussian noise
+for t in scheduler.timesteps:                 # Reversed denoising timesteps
+    noise_pred = unet(latents, t, text_embeddings)
+    latents    = scheduler.step(noise_pred, t, latents).prev_sample
+image = vae.decode(latents).sample            # Decode final latent back to pixel space</code></pre>
+<br>
+
+<p align="justify">
+  🟡 <b>Scaled-Up Elements</b>
+  <br>
+  <br>
+  <li><b>Noise Schedule (Linear \(\rightarrow\) Cosine):</b> Real-world models employ a <i>cosine schedule</i> (Nichol & Dhariwal, 2021) to prevent the abrupt signal-to-noise ratio drop-offs that occur at the extremes of a linear schedule.</li>
+  <li><b>Architecture (MLP \(\rightarrow\) UNet):</b> The 4-layer <code>EpsilonMLP</code> is replaced by a massive 2.6-billion parameter <b>2D UNet</b>. Time embeddings are still sinusoidal, but they are injected via <b>Adaptive Group Normalization (AdaGN)</b> inside ResNet blocks rather than simple concatenation.</li>
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  🔴 <b>Genuinely New Elements</b>
+  <br>
+  <br>
+  <li><b>The Latent Space (VAE):</b> Diffusion in pixel space (\(3 \times 1024 \times 1024\)) is computationally prohibitive. Stable Diffusion solves this by training a <b>Variational Autoencoder (VAE)</b> to compress the image spatially by 8× into a lower-dimensional latent space (\(4 \times 128 \times 128\)). The diffusion process is run *entirely* within this latent space.</li>
+  <li><b>CLIP Text Conditioning:</b> To inject a text prompt, the text is tokenized and passed through a frozen CLIP text encoder. The resulting embeddings are integrated into the UNet bottleneck via <b>cross-attention layers</b> where the noisy image features act as queries, and the text features act as keys and values.</li>
+  <li><b>Classifier-Free Guidance (CFG):</b> To control how strongly the model respects the prompt, the model is trained conditionally (80% of the time) and unconditionally (20% of the time). At inference, we extrapolate the conditional prediction away from the unconditional prediction:
+    \[\boldsymbol{\epsilon}_{\text{guided}} = \boldsymbol{\epsilon}_{\text{uncond}} + s \cdot (\boldsymbol{\epsilon}_{\text{cond}} - \boldsymbol{\epsilon}_{\text{uncond}})\]
+    where \(s\) is the guidance scale (typically 7–9).</li>
+  <li><b>Fast Samplers (DDIM / DPM-Solver):</b> DDPM sampling requires hundreds of sequential steps. By rewriting the reverse process as a deterministic ODE (Song et al., 2020) and setting stochastic noise \(z = 0\), <b>DDIM</b> allows us to safely skip timesteps, reducing inference from 1000 steps down to 20–35 steps.</li>
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>Code Comparison: VAE Latent Encoding & Classifier-Free Guidance (CFG)</i></b>
+  <br>
+  <br>
+  The genuinely new architectural components (the VAE latent space and the dual-conditioning inference loop) are implemented cleanly in production pipelines using separate forward passes for unconditional and conditional paths:
+  <br>
+</p>
+
+<b>Inference Pipeline Call (HuggingFace Diffusers):</b>
+<pre><code>from diffusers import StableDiffusionPipeline
+
+# Load the pretrained components
+pipe = StableDiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-2-1-base")
+pipe.to("cuda")
+
+# Generate an image using a prompt, negative prompt, and guidance scale
+image = pipe(
+    prompt="A realistic macro photo of a colorful glass marble on sand",
+    negative_prompt="blurry, low quality, oversaturated",
+    guidance_scale=8.0,
+    num_inference_steps=35
+).images[0]</code></pre>
+
+<b>Under the Hood: VAE Compression & Classifier-Free Guidance Denoising Step:</b>
+<pre><code># 1. Encoding healthy images/tensors into the latent space (VAE)
+latents = vae.encode(pixel_images).latent_dist.sample()
+latents = latents * 0.18215  # Scaling factor to match unit variance
+
+# 2. Classifier-Free Guidance (CFG) double forward pass at each timestep t
+# Extract prompt embeddings (conditional) and negative prompt embeddings (unconditional)
+cond_emb   = text_encoder(prompt_ids)[0]
+uncond_emb = text_encoder(negative_prompt_ids)[0]
+
+# Run double forward pass to predict noise
+noise_pred_uncond = unet(latents, t, uncond_emb).sample
+noise_pred_cond   = unet(latents, t, cond_emb).sample
+
+# Extrapolate: push away from unconditional, toward conditional
+noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_cond - noise_pred_uncond)
+
+# 3. Step backward in the trajectory using the guided noise prediction
+latents = scheduler.step(noise_pred, t, latents).prev_sample</code></pre>
+<br>
+
+<p align="justify">
+  <b><i>Summary Comparison: Toy vs. Stable Diffusion XL</i></b>
+  <br>
+  <br>
+<table border="1" style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <td style="padding: 8px;"><b>Dimension</b></td>
+    <td style="padding: 8px;"><b>Toy Model (Swiss Roll)</b></td>
+    <td style="padding: 8px;"><b>Stable Diffusion XL (SD-XL)</b></td>
+    <td style="padding: 8px;"><b>Status</b></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Data Space</b></td>
+    <td style="padding: 8px;">2D Physical coordinates \((B, 2)\)</td>
+    <td style="padding: 8px;">Latent space \((B, 4, H//8, W//8)\)</td>
+    <td style="padding: 8px;">🔴 Genuinely New (VAE)</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Noise Schedule</b></td>
+    <td style="padding: 8px;">Linear schedule (\(T=100\))</td>
+    <td style="padding: 8px;">Cosine schedule (\(T=1000\))</td>
+    <td style="padding: 8px;">🟡 Scaled-Up</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Conditioning</b></td>
+    <td style="padding: 8px;">Timestep \(t\) only</td>
+    <td style="padding: 8px;">Timestep \(t\) + CLIP text embeddings</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>UNet Injection</b></td>
+    <td style="padding: 8px;">MLP concatenation</td>
+    <td style="padding: 8px;">AdaGN (time) + Cross-Attention (text)</td>
+    <td style="padding: 8px;">🟡 Scaled-Up</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Inference Sampler</b></td>
+    <td style="padding: 8px;">Stochastic DDPM (100 steps)</td>
+    <td style="padding: 8px;">Deterministic DPM-Solver++ (20–35 steps)</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>CFG / Neg Prompt</b></td>
+    <td style="padding: 8px;">None</td>
+    <td style="padding: 8px;">Guidance Scale and Negative prompts</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+</table>
+  <br>
+</p>
+
+<pre><code>THE SD-XL INFERENCE LAYERS PIPELINE
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │  4. Fast samplers (DDIM / DPM-Solver)                       │  ← Inference Efficiency (30 steps)
+  │  3. CFG + CLIP text conditioning                            │  ← Guidance & Prompt Adherence
+  │  2. UNet (spatial structures at scale)                      │  ← Feature extraction & AdaGN
+  │  1. VAE latent space                                        │  ← Computational space compression
+  ├─────────────────────────────────────────────────────────────┤
+  │  DDPM CORE ENGINE (Forward jump, loss, reverse math, EMA)   │  ← Functions identical to Toy Model
+  └─────────────────────────────────────────────────────────────┘</code></pre>
+
+<br>
+<hr>
+<br>
+
+<!-- SECTION 3 -->
+<p align="justify">
+  <b>3. Localized Defect Generation and Inpainting</b>
+  <br>
+  <br>
+  In creative content generation, any plausible, visually pleasing image is a success. However, in industrial visual inspection (e.g., detecting cracks in concrete, wafer defects, or metallic scratches), the requirements are radically different. We must generate highly realistic defects on a healthy surface, ensuring the background is completely unaltered.
+  <br>
+  <br>
+  This is the precise domain of localized defect generation pipelines. Built on top of latent diffusion models, they introduce structural changes to guarantee pixel-perfect background preservation and precise spatial control over the generated defect.
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>1. UNet Input: 4 to 9 Channels (Inpainting)</i></b>
+  <br>
+  <br>
+  Standard SD-XL accepts a 4-channel noisy latent. The localized inpainting model extends the first convolutional layer of the UNet to accept **9 channels**, concatenating three distinct latent tensors:
+  \[x_t^{\text{inpaint}} = \text{concat}(x_t,\; M,\; b)\]
+  <br>
+  <li><b>\(x_t\) (4 channels):</b> The current noisy latent in the diffusion trajectory.</li>
+  <li><b>Mask \(M\) (1 channel):</b> The binary inpainting mask downsampled to latent resolution (\(1 \times 64 \times 64\)).</li>
+  <li><b>Background \(b\) (4 channels):</b> The VAE-encoded healthy background image, with pixels outside the mask zeroed out.</li>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>2. Text Conditioning: One CLIP + sks Token</i></b>
+  <br>
+  <br>
+  Rather than writing complex prompts, the defect generation model uses a **special concept token** (the rare token <code>sks</code>) initialized neutrally to act as a blank canvas. By training LoRA parameters on the attention layers of the UNet and the text encoder, the model associates the <code>sks</code> token with the texture of the target defect class.
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>3. The Core Contribution: The Three-Loss Objective</i></b>
+  <br>
+  <br>
+  To train a standard model to paint a defect inside a tiny masked region using as few as **7 pair-samples**, standard MSE is insufficient. The localized defect generation pipeline optimizes a weighted joint objective of three losses:
+  \[\mathcal{L}_{\text{ours}} = 0.5 \cdot \mathcal{L}_{\text{def}} + 0.2 \cdot \mathcal{L}_{\text{obj}} + 0.05 \cdot \mathcal{L}_{\text{attn}}\]
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b>Loss 1: Defect Texture Loss (\(\mathcal{L}_{\text{def}}\))</b>
+  <br>
+  Defines <i>what the defect looks like</i>. The MSE loss is calculated **strictly inside the masked defect region**, ignoring any background errors. This forces the <code>sks</code> token to encode the defect texture, rather than memorizing the healthy background.
+  \[\mathcal{L}_{\text{def}} = \mathbb{E}\left[\left\| M \odot \left(\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(x_t^{\text{def}}, t, c^{\text{def}})\right) \right\|_2^2\right]\]
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b>Loss 2: Object Context Loss (\(\mathcal{L}_{\text{obj}}\))</b>
+  <br>
+  Defines <i>how the defect sits within the wider object</i>. We construct a temporary random mask (e.g., 30 random boxes) to corrupt healthy regions. The loss is computed over the whole image, but weighted: the defect region has weight 1.0, and the healthy background has weight 0.3. This forces the model to learn context—how a defect naturally blends with wafer lines, metallic grains, or fabric fibers.
+  \[M' = M + 0.3 \cdot (1 - M)\]
+  \[\mathcal{L}_{\text{obj}} = \mathbb{E}\left[\left\| M' \odot \left(\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(x_t^{\text{obj}}, t, c^{\text{obj}})\right) \right\|_2^2\right]\]
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b>Loss 3: Cross-Attention Alignment Loss (\(\mathcal{L}_{\text{attn}}\))</b>
+  <br>
+  Defines <i>where the defect is generated</i>. By forcing the spatial cross-attention map of the <code>sks</code> token to exactly match the target mask \(M\), we prevent the defect's features from bleeding outside the mask.
+  \[\mathcal{L}_{\text{attn}} = \mathbb{E}\left[\left\| A_t^{[V^*]} - M \right\|_2^2\right]\]
+  <br>
+  <br>
+</p>
+
+<p align="justify">
+  <b><i>4. UNet Attention Hooks</i></b>
+  <br>
+  <br>
+  To compute \(\mathcal{L}_{\text{attn}}\), we inject a custom processor into the <b>decoder</b> (<code>up_blocks</code>) cross-attention (<code>attn2</code>) layers. This processor intercepts and aggregates attention maps for the <code>sks</code> token across all heads and layers:
+  <br>
+</p>
+
+<pre><code>class AttnMapCaptureProcessor:
+    def __init__(self):
+        self.attn_map = None
+
+    def __call__(self, attn, hidden_states, encoder_hidden_states=None, **kwargs):
+        # standard projection
+        query = attn.to_q(hidden_states)
+        key   = attn.to_k(encoder_hidden_states)
+        value = attn.to_v(encoder_hidden_states)
+        
+        # Calculate attention weights manually to capture map (cannot use SDPA fusion)
+        scale = 1.0 / np.sqrt(query.shape[-1])
+        attn_weights = (query @ key.transpose(-2, -1) * scale).softmax(dim=-1)
+        
+        # Store spatial attention matrix for the sks token column for L_attn
+        self.attn_map = attn_weights.detach()
+        
+        # Standard output projection
+        return attn.to_out[0](attn_weights @ value)</code></pre>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>5. Step-Wise Latent Blending</i></b>
+  <br>
+  <br>
+  Standard image editors blend background pixels only at the very end of inference. However, because the UNet's reverse denoising path relies on surrounding context, a pixel-only post-hoc blend causes visual artifacts.
+  <br>
+  <br>
+  The model solves this by performing **step-wise latent blending** at *every single DDIM step*:
+  \[z_{t-1} = M \cdot z_{t-1}^{\text{model}} + (1 - M) \cdot \text{add\_noise}(z_0^{\text{healthy}},\; \boldsymbol{\epsilon},\; t_{\text{next}})\]
+  This guarantees that the surrounding background is kept physically correct at all stages of generation, guiding the model to align textures perfectly at the boundaries.
+  <br>
+</p>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>6. Low-Fidelity Selection (LFS)</i></b>
+  <br>
+  <br>
+  Diffusion models are highly stochastic; some random seeds may over-reconstruct the background and fail to show a clear defect.
+  To resolve this, the pipeline generates **8 candidate samples** in parallel and selects the best candidate using a **perceptual metric (LPIPS)** inside the masked region:
+  <br>
+</p>
+
+<pre><code>def low_fidelity_selection(pipeline, healthy_image, mask, prompt, n_candidates=8):
+    candidates = []
+    lpips_scores = []
+    
+    for seed in range(n_candidates):
+        img_out = pipeline(healthy_image, mask, prompt, seed=seed)
+        candidates.append(img_out)
+        
+        # Compute LPIPS distance strictly inside the mask
+        score = compute_masked_lpips(img_out, healthy_image, mask)
+        lpips_scores.append(score)
+        
+    # Counter-intuitive: pick the HIGHEST score. 
+    # High LPIPS = clearly visible, realistic defect. Low LPIPS = failed flat generation.
+    best_idx = np.argmax(lpips_scores)
+    return candidates[best_idx]</code></pre>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b><i>Comparison Table: SD-XL vs. Localized Defect Generation</i></b>
+  <br>
+  <br>
+<table border="1" style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <td style="padding: 8px;"><b>Dimension</b></td>
+    <td style="padding: 8px;"><b>HuggingFace SD-XL</b></td>
+    <td style="padding: 8px;"><b>Localized Defect Generation</b></td>
+    <td style="padding: 8px;"><b>Status</b></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>UNet Channels</b></td>
+    <td style="padding: 8px;">4 channels (Noisy latent)</td>
+    <td style="padding: 8px;">9 channels (Noisy latent, mask, background)</td>
+    <td style="padding: 8px;">🟡 Adapted</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Training Objective</b></td>
+    <td style="padding: 8px;">Global noise prediction MSE</td>
+    <td style="padding: 8px;">\(\mathcal{L}_{\text{def}}\) + \(\mathcal{L}_{\text{obj}}\) + \(\mathcal{L}_{\text{attn}}\)</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Data Scale</b></td>
+    <td style="padding: 8px;">Millions of image-text pairs</td>
+    <td style="padding: 8px;">~7 defect-mask pairs (few-shot LoRA)</td>
+    <td style="padding: 8px;">🟡 Adapted</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Background Preservation</b></td>
+    <td style="padding: 8px;">Pixel-level blend at the very end</td>
+    <td style="padding: 8px;">Step-wise latent blending + final pixel blend</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px;"><b>Inference Selection</b></td>
+    <td style="padding: 8px;">Single sample (stochastic)</td>
+    <td style="padding: 8px;">LFS: 8 seeds, select maximum LPIPS change</td>
+    <td style="padding: 8px;">🔴 Genuinely New</td>
+  </tr>
+</table>
+  <br>
+</p>
+
+<pre><code>THE COMPLETE LOCALIZED DEFECT GENERATION TRAINING & INFERENCE PIPELINE
+
+  TRAINING (LoRA Fine-tuning):
+  ~7 image-mask pairs ──► Dual-Masking Loader ──► VAE Encode ──► Shared Noise & Timestep
+                              │
+                              ├── Pass 1: "A photo of sks" ──► concat(x_t, M, b_def) ──► UNet ──► L_def
+                              └── Pass 2: "A wafer with sks" ──► concat(x_t, M_rand, b_obj) ──► UNet + Hooks ──► L_obj & L_attn
+                                                                                                      │
+                                              Update LoRA weights ◄── Loss = 0.5·L_def + 0.2·L_obj + 0.05·L_attn
+
+  INFERENCE (Defect Generation):
+  Healthy Image + Mask ──► VAE Encode ──► Step-Wise DDIM Loop (50 steps)
+                                                │
+                                                ├── concat(x_t, M, b) ──► UNet ──► CFG step
+                                                └── Latent Blend: M·x_model + (1-M)·noised_healthy
+                                                              │
+                                            VAE Decode ──► Pixel-level background blend
+                                                              │
+                                            LFS Selection (Pick max LPIPS out of 8 seeds) ──► Realistic Defect Image</code></pre>
+
+<br>
+<hr>
+<br>
+
+<p align="justify">
+  <b>References</b>
+  <br>
+  <br>
+  <li>Song, Y. et al. (2025). <b>DefectFill: Realistic Defect Generation with Inpainting Diffusion Model for Visual Inspection.</b> arXiv:2503.13985v2.</li>
+  <li>Ho, J., Jain, A., & Abbeel, P. (2020). <b>Denoising Diffusion Probabilistic Models.</b> NeurIPS.</li>
+  <li>Song, J., Meng, C., & Ermon, S. (2020). <b>Denoising Diffusion Implicit Models.</b> ICLR 2021.</li>
+  <li>Rombach, R. et al. (2022). <b>High-Resolution Image Synthesis with Latent Diffusion Models.</b> CVPR.</li>
+  <li>Ho, J., & Salimans, T. (2022). <b>Classifier-Free Diffusion Guidance.</b> NeurIPS Workshop.</li>
+  <li>Hu, E. et al. (2021). <b>LoRA: Low-Rank Adaptation of Large Language Models.</b> ICLR 2022.</li>
+  <li>Nichol, A., & Dhariwal, P. (2021). <b>Improved Denoising Diffusion Probabilistic Models.</b> ICML.</li>
+  <li>Zhang, R. et al. (2018). <b>The Unreasonable Effectiveness of Deep Features as a Perceptual Metric (LPIPS).</b> CVPR.</li>
+  <li>Podell, D. et al. (2023). <b>SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis.</b> arXiv:2307.01952.</li>
+  <br>
+</p>
